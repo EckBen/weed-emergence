@@ -21,3 +21,7 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+/src/Scripts/artsCode.py
+/src/Scripts/soil_comp_GFR_forweb2.py
+/src/Scripts/output.txt
