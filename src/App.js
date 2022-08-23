@@ -1,177 +1,194 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  FormControlLabel,
-  Switch,
-  TextField
-} from '@mui/material';
+import { Box } from '@mui/material';
+
 
 import Loading from './Components/Loading';
 import Chart from './Components/Chart';
+import DataWarning from './Components/DataWarning';
+import OptionsPanel from './Components/OptionsPanel';
 
 import fetchData from './Scripts/fetchData';
 import calcSoilTemps from './Scripts/calcSoilTemps';
 import calcEmergences from './Scripts/calcEmergences';
 
-const constants = {
-  bucketDepth: 36,
-  topBucket: 6,
-  bottomBucket: function() { return this.bucketDepth - this.topBucket; },
+import { name } from './Components/LocationPicker/LocationVariables';
 
-  laminarThickness: 0.00001,
+import {
+  constants,
+  chartOptions,
+  initEmergences
+} from './AppConfigs';
+import Highcharts from 'highcharts';
 
-  intercept: 0.10,
-  p: 0.3,
-  TAW: 2 * (2/3),
-  
-  F: 0.5,
-  G: function() { return 1 - this.F; },
-
-  SL: 24,
-  M: 20,
-  DT: 3600,
-
-  Kc: 1.0,
-
-  TB: 10
-};
 
 
 
 export default function App() {
+  const [selected, setSelected] = useState(JSON.parse(localStorage.getItem(`${name}.selected`)) || '');
+  const [locations, setLocations] = useState(() => {
+    const stored = localStorage.getItem(`${name}.locations`);
+    return stored ? JSON.parse(stored) : {};
+  });
   const [loading, setLoading] = useState(false);
-  // eslint-disable-next-line no-unused-vars
-  const [loc, setLoc] = useState([-75.45499, 38.63609]);
-  // eslint-disable-next-line no-unused-vars
   const [year, setYear] = useState(2022);
   const [soilTemps, setSoilTemps] = useState({});
-  // eslint-disable-next-line no-unused-vars
-  const [emergences, setEmergences] = useState({
-    nrcc: {
-      pigweed: [],
-      ragweed: [],
-      velvetLeaf: [],
-      foxtail: [],
-      lambsquarter: []
-    },
-    weedcast: {
-      pigweed: [],
-      ragweed: [],
-      velvetLeaf: [],
-      largeCrabgrass: [],
-      foxtail: [],
-      lambsquarter: []
-    }
-  });
-  const [tillDate, setTillDate] = useState('2022-03-01');
-  const [useTillDate, setUseTillDate] = useState(false);
+  const [emergences, setEmergences] = useState(initEmergences);
+  const [tillDates, setTillDates] = useState([]);
   const [etWarning, setETWarning] = useState(false);
+  const [showOptions, setShowOptions] = useState(true);
 
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const rawData = await fetchData(loc, year, constants);
-      const newSoilTemps = await calcSoilTemps(year, rawData.etData, rawData.tempPrcpData, rawData.buckets, constants);
-      setSoilTemps(newSoilTemps);
-      setETWarning(rawData.etData === null);
+      try {
+        const currLoc = locations[selected];
+        const rawData = await fetchData([currLoc.lng, currLoc.lat], year, constants);
+        const newSoilTemps = await calcSoilTemps(year, rawData.etData, rawData.tempPrcpData, rawData.buckets, constants);
+        setSoilTemps(newSoilTemps);
+        setETWarning(rawData.etData === null);
+      } catch {
+        setSoilTemps({});
+        setETWarning(true);
+      }
       setLoading(false);
     })();
-  }, [loc, year]);
+  }, [selected, year]);
 
   useEffect(() => {
     if (Object.keys(soilTemps).length > 0) {
-      setEmergences(calcEmergences(soilTemps, 'two', useTillDate ? tillDate : null));
+      setEmergences(calcEmergences(soilTemps, 'two', tillDates));
+    } else {
+      setEmergences(initEmergences);
     }
-  }, [soilTemps, useTillDate, tillDate]);
+  }, [soilTemps, tillDates]);
+
+  useEffect(() => {
+    for (var i = 0; i < Highcharts.charts.length; i++) {
+      if (Highcharts.charts[i] !== undefined) {
+        Highcharts.charts[i].reflow();
+      }
+    }
+  }, [showOptions]);
 
 
   return (
     <Box>
-      <Box sx={{ fontSize: '20px', fontWeight: 'bold', textAlign: 'center' }}>Testing in progress...</Box>
+      <Box sx={{
+        color: 'rgb(200,0,0)',
+        fontSize: '14px',
+        fontStyle: 'italic',
+        textAlign: 'center',
+        backgroundColor: 'rgba(200,0,0,0.2)',
+        padding: '8px 0px',
+        borderBottom: '1px solid rgba(200,0,0,0.1)',
+        marginLeft: showOptions ? '175px' : 0
+      }}>
+        Development in progress...
+      </Box>
 
+      <OptionsPanel
+        selected={selected}
+        setSelected={setSelected}
+        locations={locations}
+        setLocations={setLocations}
+        year={year}
+        setYear={setYear}
+        tillDates={tillDates}
+        setTillDates={setTillDates}
+        soilTemps={soilTemps}
+        show={showOptions}
+        setShow={setShowOptions}
+      />
+        
       <Box sx={{
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
-        margin: 3
+        justifyContent: 'center',
+        width: `calc(100% - ${showOptions ? '175' : 0}px)`,
+        margin: showOptions ? '0px 0px 0px 175px' : '0 auto',
+        backgroundColor: 'rgb(240,240,240)'
       }}>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={useTillDate}
-              onChange={(e) => setUseTillDate(e.target.checked)}
-            />
-          }
-          labelPlacement='start'
-          label='Till event?'
-        />
-        <TextField
-          type='date'
-          value={tillDate}
-          onChange={(e) => setTillDate(e.target.value)}
-          disabled={!useTillDate}
-          sx={{ width: 250 }}
-        />
+        {etWarning && <DataWarning />}
+        {loading ? <Loading /> :
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            width: '100%'
+          }}>
+            <Box sx={{
+              padding: '15px'
+            }}>
+              <Chart
+                categories={Object.keys(soilTemps).length > 0 ? soilTemps.dates : []}
+                series={[{
+                  data: emergences.nrcc.pigweed,
+                  name: 'Pigweed'
+                },{
+                  data: emergences.nrcc.ragweed,
+                  name: 'Ragweed'
+                },{
+                  data: emergences.nrcc.velvetLeaf,
+                  name: 'Velvet Leaf'
+                },{
+                  data: emergences.nrcc.foxtail,
+                  name: 'Foxtail'
+                },{
+                  data: emergences.nrcc.lambsquarter,
+                  name: 'Lambsquarter'
+                }]}
+                options={{
+                  ...chartOptions(year),
+                  subtitle: {
+                    text: 'NRCC Weed Emergence Models',
+                  }
+                }}
+                sx={{
+                  borderRadius: '5px',
+                  overflow: 'hidden',
+                  boxShadow: '2px 2px 3px 2px rgb(180,180,180)'
+                }}
+              />
+            </Box>
+            <Box sx={{
+              padding: '15px'
+            }}>
+              <Chart
+                categories={Object.keys(soilTemps).length > 0 ? soilTemps.dates : []}
+                series={[{
+                  data: emergences.weedcast.pigweed,
+                  name: 'Pigweed'
+                },{
+                  data: emergences.weedcast.ragweed,
+                  name: 'Ragweed'
+                },{
+                  data: emergences.weedcast.velvetLeaf,
+                  name: 'Velvet Leaf'
+                },{
+                  data: emergences.weedcast.foxtail,
+                  name: 'Foxtail'
+                },{
+                  data: emergences.weedcast.lambsquarter,
+                  name: 'Lambsquarter'
+                },{
+                  data: emergences.weedcast.largeCrabgrass,
+                  name: 'Large Crabgrass'
+                }]}
+                options={{
+                  ...chartOptions(year),
+                  subtitle: {
+                    text: 'Weedcast Weed Emergence Models'
+                  }
+                }}
+                sx={{
+                  borderRadius: '5px',
+                  overflow: 'hidden',
+                  boxShadow: '2px 2px 3px 2px rgb(180,180,180)'
+                }}
+              />
+            </Box>
+          </Box>
+        }
       </Box>
-
-      {etWarning && <Box style={{ color: 'red' }}>Warning: Evapotranspiration data was unavailable for this location/time. As a results, the displayed data are not accurate.</Box>}
-
-      {loading ? <Loading /> :
-        <>
-          <Chart
-            categories={soilTemps.dates}
-            series={[{
-              data: emergences.nrcc.pigweed,
-              name: 'Pigweed'
-            },{
-              data: emergences.nrcc.ragweed,
-              name: 'Ragweed'
-            },{
-              data: emergences.nrcc.velvetLeaf,
-              name: 'Velvet Leaf'
-            },{
-              data: emergences.nrcc.foxtail,
-              name: 'Foxtail'
-            },{
-              data: emergences.nrcc.lambsquarter,
-              name: 'Lambsquarter'
-            }]}
-            options={{
-              title: {
-                text: 'NRCC Weed Emergence Models'
-              }
-            }}
-          />
-
-          <Chart
-            categories={soilTemps.dates}
-            series={[{
-              data: emergences.weedcast.pigweed,
-              name: 'Pigweed'
-            },{
-              data: emergences.weedcast.ragweed,
-              name: 'Ragweed'
-            },{
-              data: emergences.weedcast.velvetLeaf,
-              name: 'Velvet Leaf'
-            },{
-              data: emergences.weedcast.largeCrabgrass,
-              name: 'Large Crabgrass'
-            },{
-              data: emergences.weedcast.foxtail,
-              name: 'Foxtail'
-            },{
-              data: emergences.weedcast.lambsquarter,
-              name: 'Lambsquarter'
-            }]}
-            options={{
-              title: {
-                text: 'Weedcast Weed Emergence Models'
-              }
-            }}
-          />
-        </>
-      }
     </Box>
   );
 }

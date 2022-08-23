@@ -7,19 +7,20 @@ import { Box } from '@mui/material';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import NoDataToDisplay from 'highcharts/modules/no-data-to-display';
+import { parseISO, format } from 'date-fns';
 NoDataToDisplay(Highcharts);
 
 
 
-export default function Chart({ categories, series, options }) {
+export default function Chart({ categories, series, options, sx }) {
   const chartComponent = useRef(null);
   
   return (
     <Box sx={{
       position: 'relative',
-      paddingTop: '60px',
-      height: 500,
-      width: '100%'
+      height: 400,
+      width: '100%',
+      ...sx
     }}>
       <HighchartsReact
         ref={chartComponent}
@@ -42,7 +43,18 @@ export default function Chart({ categories, series, options }) {
             shared: true
           },
           xAxis: {
-            categories: categories
+            categories: categories,
+            labels: {
+              formatter: function() {
+                let label = this.axis.defaultLabelFormatter.call(this);
+                try {
+                  return format(parseISO(label), 'MMM d');
+                } catch {
+                  return label;
+                }
+              }
+            },
+            crosshair: true
           },
           ...options
         }}
@@ -54,5 +66,6 @@ export default function Chart({ categories, series, options }) {
 Chart.propTypes = {
   categories: PropTypes.array,
   series: PropTypes.array,
-  options: PropTypes.object
+  options: PropTypes.object,
+  sx: PropTypes.object
 };

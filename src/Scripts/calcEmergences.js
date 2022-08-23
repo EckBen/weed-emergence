@@ -1,10 +1,10 @@
-const calcGDDAccumulations = (soilTemps, depth, tillDate) => {
+const calcGDDAccumulations = (soilTemps, depth, tillDates) => {
   if (Object.keys(soilTemps).length === 0) return [];
 
   let sum = 0;
   return soilTemps[depth].map((soilTemp, i) => {
     const date = soilTemps.dates[i];
-    if (tillDate && tillDate === date) {
+    if (tillDates.includes(date)) {
       sum = 0;
     } else {
       sum += Math.max(0, soilTemp - 50);
@@ -68,8 +68,8 @@ const lambsquartersWeedcast = (gddAcc) => {
 };
 
 
-const calcEmergences = (soilTemps, depth, tillDate) => {
-  const gdds = calcGDDAccumulations(soilTemps, depth, tillDate);
+const calcEmergences = (soilTemps, depth, tillDates) => {
+  const gdds = calcGDDAccumulations(soilTemps, depth, tillDates);
 
   const models = {
     nrcc: {
