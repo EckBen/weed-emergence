@@ -32,9 +32,16 @@ const constants = {
   TB: 10
 };
 
+const chartStyle = {
+  borderRadius: '5px',
+  overflow: 'hidden',
+  boxShadow: '2px 2px 3px 2px rgb(180,180,180)',
+  borderRight: '1px solid rgba(237, 142, 0, 0.5)',
+  borderBottom: '1px solid rgba(237, 142, 0, 0.5)'
+};
+
 const chartOptions = (year) => {
   return {
-    colors: ['#D9ED92', '#99D98C', '#52B69A', '#34A0A4', '#1A759F', '#184E77'],
     title: {
       text: `Percent Cumulative Emergence for Weed Species in ${year}`
     },
@@ -124,6 +131,7 @@ const yearItems = (begin, end) => {
 export {
   constants,
   chartOptions,
+  chartStyle,
   initEmergences,
   yearItems
 };

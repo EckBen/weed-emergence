@@ -16,6 +16,7 @@ import { name } from './Components/LocationPicker/LocationVariables';
 import {
   constants,
   chartOptions,
+  chartStyle,
   initEmergences
 } from './AppConfigs';
 import Highcharts from 'highcharts';
@@ -72,8 +73,11 @@ export default function App() {
 
 
   return (
-    <Box>
-      <Box sx={{
+    <Box sx={{
+      backgroundColor: 'rgb(240,240,240)',
+      height: '100vh'
+    }}>
+      {/* <Box sx={{
         color: 'rgb(200,0,0)',
         fontSize: '14px',
         fontStyle: 'italic',
@@ -84,7 +88,7 @@ export default function App() {
         marginLeft: showOptions ? '175px' : 0
       }}>
         Development in progress...
-      </Box>
+      </Box> */}
 
       <OptionsPanel
         selected={selected}
@@ -104,9 +108,15 @@ export default function App() {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        width: `calc(100% - ${showOptions ? '175' : 0}px)`,
-        margin: showOptions ? '0px 0px 0px 175px' : '0 auto',
-        backgroundColor: 'rgb(240,240,240)'
+        height: '100vh',
+        minHeight: 860,
+        width: `calc(100% - ${showOptions ? '200' : 0}px)`,
+        margin: showOptions ? '0px 0px 0px 200px' : '0 auto',
+        backgroundColor: 'rgb(240,240,240)',
+        '@media (max-width: 600px)': {
+          width: '100%',
+          margin: '0 auto'
+        }
       }}>
         {etWarning && <DataWarning />}
         {loading ? <Loading /> :
@@ -116,11 +126,21 @@ export default function App() {
             width: '100%'
           }}>
             <Box sx={{
-              padding: '15px'
+              boxSizing: 'border-box',
+              padding: '15px',
+              maxWidth: 1400,
+              width: '100%',
+              margin: '0 auto'
             }}>
               <Chart
                 categories={Object.keys(soilTemps).length > 0 ? soilTemps.dates : []}
                 series={[{
+                  data: emergences.nrcc.foxtail,
+                  name: 'Foxtail'
+                },{
+                  data: emergences.nrcc.lambsquarter,
+                  name: 'Lambsquarter'
+                },{
                   data: emergences.nrcc.pigweed,
                   name: 'Pigweed'
                 },{
@@ -129,41 +149,27 @@ export default function App() {
                 },{
                   data: emergences.nrcc.velvetLeaf,
                   name: 'Velvet Leaf'
-                },{
-                  data: emergences.nrcc.foxtail,
-                  name: 'Foxtail'
-                },{
-                  data: emergences.nrcc.lambsquarter,
-                  name: 'Lambsquarter'
                 }]}
                 options={{
                   ...chartOptions(year),
+                  colors: ['#D9ED92', '#99D98C', '#34A0A4', '#1A759F', '#184E77'],
                   subtitle: {
                     text: 'NRCC Weed Emergence Models',
                   }
                 }}
-                sx={{
-                  borderRadius: '5px',
-                  overflow: 'hidden',
-                  boxShadow: '2px 2px 3px 2px rgb(180,180,180)'
-                }}
+                sx={chartStyle}
               />
             </Box>
             <Box sx={{
-              padding: '15px'
+              boxSizing: 'border-box',
+              padding: '15px',
+              maxWidth: 1400,
+              width: '100%',
+              margin: '0 auto'
             }}>
               <Chart
                 categories={Object.keys(soilTemps).length > 0 ? soilTemps.dates : []}
                 series={[{
-                  data: emergences.weedcast.pigweed,
-                  name: 'Pigweed'
-                },{
-                  data: emergences.weedcast.ragweed,
-                  name: 'Ragweed'
-                },{
-                  data: emergences.weedcast.velvetLeaf,
-                  name: 'Velvet Leaf'
-                },{
                   data: emergences.weedcast.foxtail,
                   name: 'Foxtail'
                 },{
@@ -172,18 +178,24 @@ export default function App() {
                 },{
                   data: emergences.weedcast.largeCrabgrass,
                   name: 'Large Crabgrass'
+                },{
+                  data: emergences.weedcast.pigweed,
+                  name: 'Pigweed'
+                },{
+                  data: emergences.weedcast.ragweed,
+                  name: 'Ragweed'
+                },{
+                  data: emergences.weedcast.velvetLeaf,
+                  name: 'Velvet Leaf'
                 }]}
                 options={{
                   ...chartOptions(year),
+                  colors: ['#D9ED92', '#99D98C', '#52B69A', '#34A0A4', '#1A759F', '#184E77'],
                   subtitle: {
                     text: 'Weedcast Weed Emergence Models'
                   }
                 }}
-                sx={{
-                  borderRadius: '5px',
-                  overflow: 'hidden',
-                  boxShadow: '2px 2px 3px 2px rgb(180,180,180)'
-                }}
+                sx={chartStyle}
               />
             </Box>
           </Box>
