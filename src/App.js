@@ -63,6 +63,7 @@ export default function App() {
     }
   }, [soilTemps, tillDates]);
 
+
   useEffect(() => {
     for (var i = 0; i < Highcharts.charts.length; i++) {
       if (Highcharts.charts[i] !== undefined) {

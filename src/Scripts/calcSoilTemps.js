@@ -8,7 +8,9 @@ function round(value, step) {
 
 const getDateAdjustment = (etData, tempPrcpData, year) => {
   const etParts = etData.dates_pet[0].split('/');
-  return differenceInCalendarDays(new Date(year, parseInt(etParts[0]) - 1, etParts[1]), new Date(tempPrcpData[0][0].split('-')));
+  const tempPrcpParts = tempPrcpData[0][0].split('-');
+  tempPrcpParts[1] = parseInt(tempPrcpParts[1]) - 1;
+  return differenceInCalendarDays(new Date(year, parseInt(etParts[0]) - 1, etParts[1]), new Date(...tempPrcpParts));
 };
 
 const thermalConductivity = (BD, waterContent, clay, temp) => {
@@ -166,11 +168,10 @@ const createConstants = (laminarThickness, M) => {
 // const calcSoilTemps = (dpInit, etData, tempPrcpData, buckets, year, wvMax, maxTAdj, TB, laminarThickness, thermalConductivitysolid) => {
 const calcSoilTemps = (year, etData, tempPrcpData, buckets, constants) => {
   const wvMax = round((buckets.top.wvMax + buckets.bottom.wvMax) / 2, 0.001);
-
   const sDate = new Date(year,1,27);
 
   const { inches, z } = createConstants(constants.laminarThickness, constants.M);
-
+  
   let DA;
   if (etData !== null) {
     DA = getDateAdjustment(etData, tempPrcpData, year);
@@ -187,7 +188,6 @@ const calcSoilTemps = (year, etData, tempPrcpData, buckets, constants) => {
   } else {
     DA = 0;
   }
-
 
   // let depthProfile = Array.from({length: constants.M + 2}, () => dpInit);
   let depthProfile = Array.from({length: constants.M + 2}, () => constants.TB);
@@ -239,16 +239,15 @@ const calcSoilTemps = (year, etData, tempPrcpData, buckets, constants) => {
       // fourInchSoil
     } = soil2InchModel(constants, TA, AM, wvTop/constants.topBucket, wvBottom/constants.bottomBucket(), buckets, depthProfile, inches, z);
 
-
     depthProfile = newDepthProfile;
-
+    
     results.dates.push(format(date, 'yyyy-MM-dd'));
     // results.airTemps.push((tempsAndPrcp[2] + tempsAndPrcp[1]) / 2);
     // results.et.push(etData === null ? 0 : etData[i]);
     // results.prcp.push(tempsAndPrcp[3]);
     // results.wvs[0].push(wvTop);
     // results.wvs[1].push(wvBottom);
-
+    
     // results.one.push((9/5) * oneInchSoil + 32);
     results.two.push((9/5) * twoInchSoil + 32);
     // results.four.push((9/5) * fourInchSoil + 32);

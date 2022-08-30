@@ -14,7 +14,7 @@ NoDataToDisplay(Highcharts);
 
 export default function Chart({ categories, series, options, sx }) {
   const chartComponent = useRef(null);
-  
+
   return (
     <Box sx={{
       position: 'relative',
