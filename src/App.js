@@ -44,6 +44,7 @@ export default function App() {
       try {
         const currLoc = locations[selected];
         const rawData = await fetchData([currLoc.lng, currLoc.lat], year, constants);
+        console.log(rawData);
         const newSoilTemps = await calcSoilTemps(year, rawData.etData, rawData.tempPrcpData, rawData.buckets, constants);
         setSoilTemps(newSoilTemps);
         setETWarning(rawData.etData === null);
