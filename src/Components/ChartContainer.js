@@ -9,8 +9,6 @@ import TillInfo from './TillInfo';
 
 
 export default function ChartContainer({ children, showWarning, showInfo, sx }) {
-  console.log(showWarning, showInfo);
-  
   return (
     <Box sx={{
       position: 'relative',

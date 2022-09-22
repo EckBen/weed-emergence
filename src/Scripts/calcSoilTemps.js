@@ -166,28 +166,41 @@ const createConstants = (laminarThickness, M) => {
 };
 
 // const calcSoilTemps = (dpInit, etData, tempPrcpData, buckets, year, wvMax, maxTAdj, TB, laminarThickness, thermalConductivitysolid) => {
-const calcSoilTemps = (year, etData, tempPrcpData, buckets, constants) => {
+const calcSoilTemps = (year, rawEtData, tempPrcpData, locHrly, buckets, constants) => {
   const wvMax = round((buckets.top.wvMax + buckets.bottom.wvMax) / 2, 0.001);
   const sDate = new Date(year,1,27);
 
   const { inches, z } = createConstants(constants.laminarThickness, constants.M);
-  
+
+  // Adjust data arrays to have matching lengths and dates
   let DA;
-  if (etData !== null) {
-    DA = getDateAdjustment(etData, tempPrcpData, year);
+  let etData = null;
+  if (rawEtData !== null) {
+    DA = getDateAdjustment(rawEtData, tempPrcpData, year);
     
     if (DA > 0) {
       const currentDateIdx = tempPrcpData.findIndex(arr => arr[1] === -999 || arr[2] === -999 || arr[3] === -999);
       tempPrcpData = tempPrcpData.slice(DA, currentDateIdx >= 0 ? currentDateIdx : tempPrcpData.length);
-      etData = etData.pet;
+      etData = rawEtData.pet;
     } else if (DA < 0) {
-      etData = etData.pet.slice(Math.abs(DA));
+      etData = rawEtData.pet.slice(Math.abs(DA));
     } else {
-      etData = etData.pet;
+      etData = rawEtData.pet;
     }
+    etData = etData.concat(rawEtData.pet_fcst);
   } else {
     DA = 0;
   }
+
+  // Convert and add forecast dates to data arrays
+  rawEtData.dates_precip_fcst.forEach(function(e, i) {
+    const date = [year, ...e.split('/')].join('-');
+    const fcstValue = rawEtData.precip_fcst[i];
+    const idx = locHrly.findIndex(arr => arr[0] === date);
+    locHrly[idx].push(fcstValue);
+  });
+  locHrly = locHrly.filter(arr => arr.length === 4);
+  tempPrcpData = tempPrcpData.concat(locHrly);
 
   // let depthProfile = Array.from({length: constants.M + 2}, () => dpInit);
   let depthProfile = Array.from({length: constants.M + 2}, () => constants.TB);

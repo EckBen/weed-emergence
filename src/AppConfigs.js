@@ -52,7 +52,6 @@ const chartOptions = (year) => {
       gridLineDashStyle: 'Dash'
     },
     tooltip: {
-      enabled: false,
       shared: true,
       outside: true,
       split: false,
@@ -75,6 +74,7 @@ const chartOptions = (year) => {
           height: 'fit-content'
         }}>
           <Box style={{ fontSize: '16px', fontWeight: 'bold', textAlign: 'center' }}>{format(parseISO(this.points[0].key), 'MMM do, yyyy')}</Box>
+          <Box style={{ fontSize: '10px', fontWeight: 'bold', textAlign: 'center' }}>{this.points[0].series.userOptions.isForecast ? 'Forecast' : 'Observed'}</Box>
           
           <Box style={{
             height: '1px',

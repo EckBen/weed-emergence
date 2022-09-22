@@ -9,6 +9,40 @@ import ChartContainer from './ChartContainer';
 
 import { chartOptions } from '../AppConfigs';
 
+// Inputs: arr- Array, targetLength- number, fillValue- any value valid to place in an Array, append- optional, boolean, defaults to true
+// Adds targetLength number of fillValue to beginning or end (determined by optional append bollean) of arr
+function fillWith(arr, targetLength, fillValue, append=true) {
+  const diff = targetLength - arr.length;
+  if (diff <= 0) return arr;
+
+  const newPortion = new Array(diff).fill(fillValue);
+  return append ? arr.concat(newPortion) : newPortion.concat(arr);
+}
+
+function constructSeries(model, names, data) {
+  return names.map(([name, color]) => {
+    const nameParts = name.split(' ');
+    nameParts[0] = nameParts[0].toLowerCase();
+    const id = nameParts.join('');
+    const thisData = data[model][id]; 
+
+    return [{
+      data: thisData.slice(0,-2),
+      name,
+      color,
+      id: model + '-' + id,
+      isForecast: false
+    },{
+      data: fillWith(thisData.slice(-2), thisData.length, null, false),
+      name,
+      color,
+      dashStyle: 'ShortDot',
+      linkedTo: model + '-' + id,
+      isForecast: true
+    }];
+  }).reduce((acc, arr) => acc.concat(arr), []);
+}
+
 
 
 export default function Charts({ loading, etWarning, emergences, showOptions, soilTemps, year, setShow, tillDates }) {
@@ -57,6 +91,25 @@ export default function Charts({ loading, etWarning, emergences, showOptions, so
       top: 10
     }
   };
+  
+  const nrccWeeds = [
+    ['Foxtail', '#D9ED92'],
+    ['Lambsquarter', '#99D98C'],
+    ['Pigweed', '#34A0A4'],
+    ['Ragweed', '#1A759F'],
+    ['Velvet Leaf', '#184E77']
+  ];
+  const nrccSeries = constructSeries('nrcc', nrccWeeds, emergences);
+
+  const weedcastWeeds = [
+    ['Foxtail', '#D9ED92'],
+    ['Lambsquarter', '#99D98C'],
+    ['Large Crabgrass', '#52B69A'],
+    ['Pigweed', '#34A0A4'],
+    ['Ragweed', '#1A759F'],
+    ['Velvet Leaf', '#184E77']
+  ];
+  const weedcastSeries = constructSeries('weedcast', weedcastWeeds, emergences);
 
   
   return (
@@ -107,25 +160,9 @@ export default function Charts({ loading, etWarning, emergences, showOptions, so
           >
             <Chart
               categories={categories}
-              series={[{
-                data: emergences.nrcc.foxtail,
-                name: 'Foxtail'
-              },{
-                data: emergences.nrcc.lambsquarter,
-                name: 'Lambsquarter'
-              },{
-                data: emergences.nrcc.pigweed,
-                name: 'Pigweed'
-              },{
-                data: emergences.nrcc.ragweed,
-                name: 'Ragweed'
-              },{
-                data: emergences.nrcc.velvetLeaf,
-                name: 'Velvet Leaf'
-              }]}
+              series={nrccSeries}
               options={{
                 ...chartOptions(year),
-                colors: ['#D9ED92', '#99D98C', '#34A0A4', '#1A759F', '#184E77'],
                 subtitle: {
                   text: 'NRCC Weed Emergence Models',
                 },
@@ -141,28 +178,9 @@ export default function Charts({ loading, etWarning, emergences, showOptions, so
           >
             <Chart
               categories={categories}
-              series={[{
-                data: emergences.weedcast.foxtail,
-                name: 'Foxtail'
-              },{
-                data: emergences.weedcast.lambsquarter,
-                name: 'Lambsquarter'
-              },{
-                data: emergences.weedcast.largeCrabgrass,
-                name: 'Large Crabgrass'
-              },{
-                data: emergences.weedcast.pigweed,
-                name: 'Pigweed'
-              },{
-                data: emergences.weedcast.ragweed,
-                name: 'Ragweed'
-              },{
-                data: emergences.weedcast.velvetLeaf,
-                name: 'Velvet Leaf'
-              }]}
+              series={weedcastSeries}
               options={{
                 ...chartOptions(year),
-                colors: ['#D9ED92', '#99D98C', '#52B69A', '#34A0A4', '#1A759F', '#184E77'],
                 subtitle: {
                   text: 'Weedcast Weed Emergence Models'
                 },
