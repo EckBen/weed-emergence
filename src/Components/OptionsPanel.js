@@ -1,21 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
-import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 import { Box, TextField, FormLabel } from '@mui/material';
 import { formatISO } from 'date-fns';
 
-import LocationPicker from './LocationPicker/LocationPicker';
 import TillDates from './TillDates';
-
-import {
-  allowedStates,
-  bbox,
-  name,
-  token,
-  storeLocations
-} from './LocationPicker/LocationVariables';
 
 import {
   yearItems
@@ -23,10 +12,7 @@ import {
 
 
 export default function OptionsPanel({
-  selected,
-  setSelected,
-  locations,
-  setLocations,
+  location,
   year,
   setYear,
   tillDates,
@@ -43,29 +29,29 @@ export default function OptionsPanel({
       left: show ? 0 : -198,
       height: '100vh',
       width: '200px',
-      zIndex: 10,
+      zIndex: 3,
       backgroundColor: 'white',
       borderRight: '2px solid rgb(207, 112, 0)',
+      transition: 'left 0.5s cubic-bezier(.17,.67,.5,1.01)'
     }}>
       <Box
         sx={{
-          background: 'linear-gradient(90deg, rgba(207,112,0,1) 0%, rgba(237,142,0,1) 100%)',
-          padding: '6px 4px 6px 2px',
-          borderRadius: '0px 6px 6px 0px',
+          background: 'linear-gradient(0deg, rgba(207,112,0,1) 0%, rgba(237,142,0,1) 100%)',
+          padding: '4px 6px',
+          borderRadius: '6px 6px 0px 0px',
           position: 'absolute',
-          right: -32,
-          top: 35,
+          right: -46,
+          top: 85,
+          transform: 'rotate(90deg)',
+          fontSize: 10,
+          color: 'white',
           '&:hover': {
             cursor: 'pointer'
           }
         }}
-        onClick={() => setShow(!show)}
+        onClick={() => setShow(show ? '' : 'options')}
       >
-        {show ?
-          <KeyboardDoubleArrowLeftIcon sx={{ color: 'white' }}/>
-          :
-          <KeyboardDoubleArrowRightIcon sx={{ color: 'white' }}/>
-        }
+        {show ? 'Hide Options' : 'Show Options'}
       </Box>
 
       <Box sx={{
@@ -79,15 +65,7 @@ export default function OptionsPanel({
       }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <FormLabel color='success' sx={{ fontSize: '12.5px' }}>Location</FormLabel>
-          <LocationPicker
-            selected={selected}
-            locations={locations}
-            newLocationsCallback={(s, l) => storeLocations(s, l, name, setSelected, setLocations)}
-            token={token}
-            bbox={bbox}
-            allowedStates={allowedStates}
-            modalZIndex={1}
-          />
+          <Box sx={{ textAlign: 'center' }}>{location}</Box>
         </Box>
         <TextField
           select
@@ -111,10 +89,7 @@ export default function OptionsPanel({
 }
 
 OptionsPanel.propTypes = {
-  selected: PropTypes.string,
-  setSelected: PropTypes.func,
-  locations: PropTypes.object,
-  setLocations: PropTypes.func,
+  location: PropTypes.string,
   year: PropTypes.number,
   setYear: PropTypes.func,
   tillDates: PropTypes.array,

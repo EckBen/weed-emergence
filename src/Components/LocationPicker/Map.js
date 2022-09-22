@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
+import { Box } from '@mui/material';
+
 import 'mapbox-gl/dist/mapbox-gl.css';
 import mapboxgl from 'mapbox-gl';
 import Map, { Popup } from 'react-map-gl';
@@ -13,9 +15,7 @@ function roundXDigits( number, digits ) {
   if (typeof number === 'string') {
     number = parseFloat(number);
   }
-  
   const res = (Math.round( Math.round( number * Math.pow(10, digits + 1) ) / 10 ) / Math.pow(10, digits)).toFixed(digits);
-  
   return parseFloat(res);
 }
 
@@ -58,7 +58,6 @@ function calcInitBounds(locations) {
     if (loc.lng < minLng) minLng = loc.lng;
   });
 
-
   // If only one location is present, adjust the coordinates to reduce initial zoom
   const adjustment = 0.1;
   if (minLat === maxLat) {
@@ -80,13 +79,14 @@ export default function MapComp(props) {
   // Set token for mapbox API
   mapboxgl.accessToken = props.token;
 
+  // Init state
   const [popup, setPopup] = useState(null);
   const [viewState, setViewState] = useState({
     bounds: calcInitBounds(props.pastLocations),
     fitBoundsOptions: {
       padding: {
-        top: 100,
-        bottom: 10,
+        top: 50,
+        bottom: 60,
         left: 15,
         right: 15
       }
@@ -157,7 +157,11 @@ export default function MapComp(props) {
 
 
   return (
-    <div id='loc-map'>
+    <Box sx={{
+      width: '100%',
+      height: '100%',
+      position: 'relative'
+    }}>
       <Map
         {...viewState}
         ref={props.mapRef}
@@ -214,7 +218,7 @@ export default function MapComp(props) {
           </Popup>
         }
       </Map>
-    </div>
+    </Box>
   );
 }
 

@@ -2,6 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Marker } from 'react-map-gl';
 
+import { Box } from '@mui/material';
+
+import redPin from './pin-red.svg';
+import bluePin from './pin-blue.svg';
+
 
 
 export default function Markers(props) {
@@ -18,12 +23,18 @@ export default function Markers(props) {
           onClick={(e) => props.onMarkerClick(e, loc)}
           style={{ zIndex: isSelected ? 2 : 1, top: -20 }}
         >
-          <div
-            className={isSelected ? 'loc-curr-marker' : 'loc-marker'}
+          <Box
+            sx={{
+              border: 'none',
+              cursor: 'pointer',
+              height: '40px',
+              width: '20px',
+              backgroundImage: `url(${isSelected ? redPin : bluePin})`
+            }}
             onMouseEnter={() => props.onMarkerMouseEnter({ ...loc, isSelected })}
             onMouseLeave={props.onMarkerMouseLeave}
             onContextMenu={() => props.onMarkerRightClick(loc, isSelected)}
-          ></div>
+          ></Box>
         </Marker>
       );
     })}

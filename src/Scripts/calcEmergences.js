@@ -14,8 +14,6 @@ const calcGDDAccumulations = (soilTemps, depth, tillDates) => {
   });
 };
 
-
-
 const pigweedNRCC = (gddAcc) => {
   if (gddAcc === 0) return 0;
   return 100 / (1 + Math.exp(20.06 - 3.12 * Math.log(gddAcc)));

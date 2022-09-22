@@ -3,12 +3,14 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MenuItem, Box } from '@mui/material';
 import { format, parseISO } from 'date-fns';
 
+// Generic rounding function
 function round(value, step) {
   step || (step = 1.0);
   var inv = 1.0 / step;
   return Math.round(value * inv) / inv;
 }
 
+// Constants for use in calculating soil temps
 const constants = {
   bucketDepth: 36,
   topBucket: 6,
@@ -32,18 +34,11 @@ const constants = {
   TB: 10
 };
 
-const chartStyle = {
-  borderRadius: '5px',
-  overflow: 'hidden',
-  boxShadow: '2px 2px 3px 2px rgb(180,180,180)',
-  borderRight: '1px solid rgba(237, 142, 0, 0.5)',
-  borderBottom: '1px solid rgba(237, 142, 0, 0.5)'
-};
-
+// Options object for charts
 const chartOptions = (year) => {
   return {
     title: {
-      text: `Percent Cumulative Emergence for Weed Species in ${year}`
+      text: `Percent Cumulative Emergence for Weed Species in ${year}`,
     },
     yAxis: {
       title: {
@@ -57,6 +52,7 @@ const chartOptions = (year) => {
       gridLineDashStyle: 'Dash'
     },
     tooltip: {
+      enabled: false,
       shared: true,
       outside: true,
       split: false,
@@ -128,10 +124,22 @@ const yearItems = (begin, end) => {
   return items;
 };
 
+// Default location if there are none in localStorage
+const defaultId = 'default';
+const defaultLocation = {
+  'default': {
+    address: '213 Warren Road, Ithaca, New York',
+    id: 'default',
+    lat: 42.457975,
+    lng: -76.46754
+  }
+};
+
 export {
   constants,
   chartOptions,
-  chartStyle,
   initEmergences,
-  yearItems
+  yearItems,
+  defaultId,
+  defaultLocation
 };

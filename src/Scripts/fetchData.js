@@ -49,7 +49,6 @@ const fetchSoilData = (loc, bucketDepth, topBucket, bottomBucket) => {
     .then(res => res.json())
     .then(jData => jData.Table)
     .then(dataList => {
-      console.log(dataList);
       const most = Math.max( ...dataList.map(arr => parseFloat(arr[5])) );
       dataList = dataList.filter(arr => (arr[5] === String(most) && !arr.includes(null)));
 

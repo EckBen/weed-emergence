@@ -1,22 +1,30 @@
 import React from 'react';
 
-import { Box } from '@mui/material';
+import { Zoom } from '@mui/material';
+import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
+import { styled } from '@mui/material/styles';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+
+const WarningTooltip = styled(({ className, ...props }) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))(() => ({
+  [`& .${tooltipClasses.tooltip}`]: {
+    backgroundColor: 'rgb(255,230,230)',
+    border: '1px solid rgb(255,120,120)',
+    color: 'rgb(255,80,80)',
+    textAlign: 'center',
+    maxWidth: 200
+  },
+}));
 
 
 export default function DataWarning() {
   return (
-    <Box sx={{
-      backgroundColor: 'rgba(255,0,0,0.1)',
-      borderBottom: '1px solid rgba(200,0,0,0.1)'
-    }}>
-      <Box style={{
-        color: 'red',
-        textAlign: 'center',
-        width: '600px',
-        margin: '5px auto',
-      }}>
-        Warning: Evapotranspiration data was unavailable for this location/time. As a results, the displayed data are not accurate.
-      </Box>
-    </Box>
+    <WarningTooltip
+      TransitionComponent={Zoom}
+      title="Warning: Evapotranspiration data was unavailable for this location/time. As a results, the displayed data are not accurate."
+    >
+      <WarningAmberIcon sx={{ color: 'rgb(205,0,0)' }}/>
+    </WarningTooltip>
   );
 }

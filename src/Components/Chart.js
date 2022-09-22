@@ -1,8 +1,7 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
 import { Box } from '@mui/material';
-
 
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
@@ -12,18 +11,19 @@ NoDataToDisplay(Highcharts);
 
 
 
-export default function Chart({ categories, series, options, sx }) {
-  const chartComponent = useRef(null);
-
+export default function Chart({ categories, series, options }) {
   return (
-    <Box sx={{
+    <Box id='other' sx={{
       position: 'relative',
       height: 400,
       width: '100%',
-      ...sx
+      borderRadius: '5px',
+      overflow: 'hidden',
+      boxShadow: '2px 2px 3px 2px rgb(180,180,180)',
+      borderRight: '1px solid rgba(237, 142, 0, 0.5)',
+      borderBottom: '1px solid rgba(237, 142, 0, 0.5)'
     }}>
       <HighchartsReact
-        ref={chartComponent}
         highcharts={Highcharts}
         options={{
           credits: { enabled: false },
@@ -42,6 +42,9 @@ export default function Chart({ categories, series, options, sx }) {
           tooltip: {
             shared: true
           },
+      
+          ...options,
+          
           xAxis: {
             categories: categories,
             labels: {
@@ -54,9 +57,9 @@ export default function Chart({ categories, series, options, sx }) {
                 }
               }
             },
-            crosshair: true
-          },
-          ...options
+            crosshair: true,
+            ...options.xAxis
+          }
         }}
       />
     </Box>
@@ -66,6 +69,5 @@ export default function Chart({ categories, series, options, sx }) {
 Chart.propTypes = {
   categories: PropTypes.array,
   series: PropTypes.array,
-  options: PropTypes.object,
-  sx: PropTypes.object
+  options: PropTypes.object
 };

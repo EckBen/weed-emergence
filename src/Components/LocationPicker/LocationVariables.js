@@ -1,3 +1,4 @@
+const name = 'weed-emergence';
 const token = 'pk.eyJ1IjoicHJlY2lwYWRtaW4iLCJhIjoiY2txYjNjMHYxMGF4NTJ1cWhibHNub3BrdiJ9.1T_U5frbnHaHonvFpHenxQ';
 
 const bbox = {
@@ -25,18 +26,9 @@ const allowedStates = [
   'Kentucky'
 ];
 
-const name = 'weed-emergence';
-const storeLocations = (selected, locations, name, setSelected, setLocations) => {
-  localStorage.setItem(`${name}.selected`, JSON.stringify(selected));
-  localStorage.setItem(`${name}.locations`, JSON.stringify(locations));
-  setSelected(selected);
-  setLocations(locations);
-};
-
 export {
   allowedStates,
   bbox,
   name,
-  token,
-  storeLocations
+  token
 };
