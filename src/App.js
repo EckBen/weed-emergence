@@ -58,7 +58,8 @@ export default function App() {
   // Calculates new emergences when data or till events change
   useEffect(() => {
     if (Object.keys(soilTemps).length > 0) {
-      setEmergences(calcEmergences(soilTemps, 'two', tillDates));
+      setEmergences(calcEmergences(soilTemps, 'two'));
+      // setEmergences(calcEmergences(soilTemps, 'two', tillDates));
     } else {
       setEmergences(initEmergences);
     }

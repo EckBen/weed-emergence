@@ -1,14 +1,19 @@
-const calcGDDAccumulations = (soilTemps, depth, tillDates) => {
+const calcGDDAccumulations = (soilTemps, depth) => {
   if (Object.keys(soilTemps).length === 0) return [];
 
   let sum = 0;
   return soilTemps[depth].map((soilTemp, i) => {
     const date = soilTemps.dates[i];
-    if (tillDates.includes(date)) {
-      sum = 0;
-    } else {
-      sum += Math.max(0, soilTemp - 50);
-    }
+
+    // If tillDates should affect accumulation, need to pass them in again
+    // if (tillDates.includes(date)) {
+    //   sum = 0;
+    // } else {
+    //   sum += Math.max(0, soilTemp - 50);
+    // }
+    
+    
+    sum += Math.max(0, soilTemp - 50);
     
     return [date, sum];
   });

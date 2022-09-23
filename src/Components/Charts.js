@@ -57,7 +57,9 @@ export default function Charts({ loading, etWarning, emergences, showOptions, so
         text: 'Till Event',
         style: {
           fontSize: 10
-        }
+        },
+        verticalAlign: 'bottom',
+        y: -60
       }
     };
   });
