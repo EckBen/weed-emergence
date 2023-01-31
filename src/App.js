@@ -48,6 +48,7 @@ export default function App() {
           year,
           constants
         );
+        console.log(rawData);
         const newSoilTemps = await calcSoilTemps(
           year,
           rawData.etData,
