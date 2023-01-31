@@ -15,14 +15,14 @@ import {
   constants,
   initEmergences,
   defaultId,
-  defaultLocation
+  defaultLocation,
 } from './AppConfigs';
 import Highcharts from 'highcharts';
 
-
-
 export default function App() {
-  const [selected, setSelected] = useState(JSON.parse(localStorage.getItem(`${name}.selected`)) || defaultId);
+  const [selected, setSelected] = useState(
+    JSON.parse(localStorage.getItem(`${name}.selected`)) || defaultId
+  );
   const [locations, setLocations] = useState(() => {
     const stored = localStorage.getItem(`${name}.locations`);
     return stored ? JSON.parse(stored) : defaultLocation;
@@ -43,8 +43,19 @@ export default function App() {
       setLoading(true);
       try {
         const currLoc = locations[selected];
-        const rawData = await fetchData([currLoc.lng, currLoc.lat], year, constants);
-        const newSoilTemps = await calcSoilTemps(year, rawData.etData, rawData.tempPrcpData, rawData.locHrly, rawData.buckets, constants);
+        const rawData = await fetchData(
+          [currLoc.lng, currLoc.lat],
+          year,
+          constants
+        );
+        const newSoilTemps = await calcSoilTemps(
+          year,
+          rawData.etData,
+          rawData.tempPrcpData,
+          rawData.locHrly,
+          rawData.buckets,
+          constants
+        );
         setSoilTemps(newSoilTemps);
         setETWarning(rawData.etData === null);
       } catch {
@@ -75,8 +86,10 @@ export default function App() {
   }, [showOptions]);
 
   // Coordinates showing and hiding overlays
-  const handleShow = (showThis='') => {
-    let opts = showOptions, add = showAddressSearch, charts = showCharts;
+  const handleShow = (showThis = '') => {
+    let opts = showOptions,
+      add = showAddressSearch,
+      charts = showCharts;
     if (showThis === 'options') {
       opts = true;
       add = false;
@@ -99,12 +112,12 @@ export default function App() {
 
   // Main function for managing locations in state
   const handleChangeLocations = (action, location) => {
-    let newLocations = {...locations};
+    let newLocations = { ...locations };
     let newSelected = selected;
     // Adds timestamp ID to location object and adds it to state
     if (action === 'add') {
       location.id = String(Date.now());
-      newLocations[location.id] = { ...location, id: location.id};
+      newLocations[location.id] = { ...location, id: location.id };
     }
 
     // Removes given location object from state
@@ -125,12 +138,13 @@ export default function App() {
     setLocations(newLocations);
   };
 
-
   return (
-    <Box sx={{
-      backgroundColor: 'rgb(240,240,240)',
-      height: '100vh'
-    }}>
+    <Box
+      sx={{
+        backgroundColor: 'rgb(240,240,240)',
+        height: '100vh',
+      }}
+    >
       <OptionsPanel
         location={locations[selected].address}
         year={year}
@@ -151,7 +165,7 @@ export default function App() {
         setShow={handleShow}
       />
 
-      {showCharts &&
+      {showCharts && (
         <Charts
           loading={loading}
           etWarning={etWarning}
@@ -162,7 +176,7 @@ export default function App() {
           setShow={handleShow}
           tillDates={tillDates}
         />
-      } 
+      )}
     </Box>
   );
 }

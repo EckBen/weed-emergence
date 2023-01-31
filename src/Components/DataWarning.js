@@ -13,18 +13,17 @@ const WarningTooltip = styled(({ className, ...props }) => (
     border: '1px solid rgb(255,120,120)',
     color: 'rgb(255,80,80)',
     textAlign: 'center',
-    maxWidth: 200
+    maxWidth: 200,
   },
 }));
-
 
 export default function DataWarning() {
   return (
     <WarningTooltip
       TransitionComponent={Zoom}
-      title="Warning: Evapotranspiration data was unavailable for this location/time. As a results, the displayed data are not accurate."
+      title='Warning: Evapotranspiration data was unavailable for this location/time (data is unavailable from November through February). As a results, the displayed data are not accurate.'
     >
-      <WarningAmberIcon sx={{ color: 'rgb(205,0,0)' }}/>
+      <WarningAmberIcon sx={{ color: 'rgb(205,0,0)' }} />
     </WarningTooltip>
   );
 }
