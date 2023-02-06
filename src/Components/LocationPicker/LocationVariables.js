@@ -1,6 +1,6 @@
 const name = 'weed-emergence';
 const token =
-  'pk.eyJ1IjoicHJlY2lwYWRtaW4iLCJhIjoiY2xkdDc3cmM1MDNtczNvcWhhNGhpaXZtNCJ9.QpcIEVHONMrzAf5D4h6XfQ';
+  'pk.eyJ1IjoicHJlY2lwYWRtaW4iLCJhIjoiY2xkdDlvamVvMGdiZzNvbjBneGtvanQweiJ9.6ym2K6NuvEF31vsMsUAiLg';
 
 const bbox = {
   north: 47.53,
