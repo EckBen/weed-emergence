@@ -1,11 +1,12 @@
 const name = 'weed-emergence';
-const token = 'pk.eyJ1IjoicHJlY2lwYWRtaW4iLCJhIjoiY2txYjNjMHYxMGF4NTJ1cWhibHNub3BrdiJ9.1T_U5frbnHaHonvFpHenxQ';
+const token =
+  'pk.eyJ1IjoicHJlY2lwYWRtaW4iLCJhIjoiY2xkdDc3cmM1MDNtczNvcWhhNGhpaXZtNCJ9.QpcIEVHONMrzAf5D4h6XfQ';
 
 const bbox = {
   north: 47.53,
   south: 37.09,
   east: -66.89,
-  west: -82.7542
+  west: -82.7542,
 };
 
 const allowedStates = [
@@ -23,12 +24,7 @@ const allowedStates = [
   'West Virginia',
   'Ohio',
   'Virginia',
-  'Kentucky'
+  'Kentucky',
 ];
 
-export {
-  allowedStates,
-  bbox,
-  name,
-  token
-};
+export { allowedStates, bbox, name, token };
