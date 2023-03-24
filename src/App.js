@@ -28,7 +28,7 @@ export default function App() {
     return stored ? JSON.parse(stored) : defaultLocation;
   });
   const [loading, setLoading] = useState(false);
-  const [year, setYear] = useState(2022);
+  const [year, setYear] = useState(new Date().getFullYear());
   const [soilTemps, setSoilTemps] = useState({});
   const [emergences, setEmergences] = useState(initEmergences);
   const [tillDates, setTillDates] = useState([]);
@@ -57,6 +57,8 @@ export default function App() {
           rawData.buckets,
           constants
         );
+        console.log(newSoilTemps);
+        console.log(rawData.etData === null);
         setSoilTemps(newSoilTemps);
         setETWarning(rawData.etData === null);
       } catch {

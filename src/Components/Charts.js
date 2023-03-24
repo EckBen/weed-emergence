@@ -19,27 +19,37 @@ function fillWith(arr, targetLength, fillValue, append=true) {
   return append ? arr.concat(newPortion) : newPortion.concat(arr);
 }
 
-function constructSeries(model, names, data) {
+function constructSeries(model, names, data, isThisYear) {
   return names.map(([name, color]) => {
     const nameParts = name.split(' ');
     nameParts[0] = nameParts[0].toLowerCase();
     const id = nameParts.join('');
     const thisData = data[model][id]; 
 
-    return [{
-      data: thisData.slice(0,-2),
-      name,
-      color,
-      id: model + '-' + id,
-      isForecast: false
-    },{
-      data: fillWith(thisData.slice(-2), thisData.length, null, false),
-      name,
-      color,
-      dashStyle: 'ShortDot',
-      linkedTo: model + '-' + id,
-      isForecast: true
-    }];
+    if (isThisYear) {
+      return [{
+        data: thisData.slice(0,-2),
+        name,
+        color,
+        id: model + '-' + id,
+        isForecast: false
+      },{
+        data: fillWith(thisData.slice(-2), thisData.length, null, false),
+        name,
+        color,
+        dashStyle: 'ShortDot',
+        linkedTo: model + '-' + id,
+        isForecast: true
+      }];
+    } else {
+      return [{
+        data: thisData,
+        name,
+        color,
+        id: model + '-' + id,
+        isForecast: false
+      }];
+    }
   }).reduce((acc, arr) => acc.concat(arr), []);
 }
 
@@ -94,6 +104,8 @@ export default function Charts({ loading, etWarning, emergences, showOptions, so
     }
   };
   
+  const isThisYear = new Date().getFullYear() === year;
+
   const nrccWeeds = [
     ['Foxtail', '#D9ED92'],
     ['Lambsquarter', '#99D98C'],
@@ -101,7 +113,7 @@ export default function Charts({ loading, etWarning, emergences, showOptions, so
     ['Ragweed', '#1A759F'],
     ['Velvet Leaf', '#184E77']
   ];
-  const nrccSeries = constructSeries('nrcc', nrccWeeds, emergences);
+  const nrccSeries = constructSeries('nrcc', nrccWeeds, emergences, isThisYear);
 
   const weedcastWeeds = [
     ['Foxtail', '#D9ED92'],
@@ -111,7 +123,7 @@ export default function Charts({ loading, etWarning, emergences, showOptions, so
     ['Ragweed', '#1A759F'],
     ['Velvet Leaf', '#184E77']
   ];
-  const weedcastSeries = constructSeries('weedcast', weedcastWeeds, emergences);
+  const weedcastSeries = constructSeries('weedcast', weedcastWeeds, emergences, isThisYear);
 
   
   return (

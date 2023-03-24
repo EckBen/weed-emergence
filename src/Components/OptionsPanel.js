@@ -74,9 +74,8 @@ export default function OptionsPanel({
           variant='standard'
           sx={{textAlign: 'center'}}
           label='Season'
-          disabled
         >
-          {yearItems(2020,2022)}
+          {yearItems(2022, new Date().getFullYear())}
         </TextField>
         <TillDates
           tillDates={tillDates}
