@@ -70,7 +70,6 @@ const fetchSoilDataViaPostRest = (
     INNER JOIN chorizon AS ch ON c.cokey = ch.cokey
     WHERE mu.mukey IN (SELECT * from SDA_Get_Mukey_from_intersection_with_WktWgs84('point (${loc})'))`;
 
-  console.log('fetching soil data...');
   let results = fetch(
     'https://sdmdataaccess.sc.egov.usda.gov/tabular/post.rest',
     {
@@ -87,7 +86,6 @@ const fetchSoilDataViaPostRest = (
   )
     .then((res) => res.json())
     .then((jData) => {
-      console.log(jData);
       return jData.Table;
     })
     .then((table) =>

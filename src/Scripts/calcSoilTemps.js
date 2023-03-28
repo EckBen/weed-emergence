@@ -281,16 +281,22 @@ const calcSoilTemps = (
     DA = 0;
   }
 
-    // Convert and add forecast dates to data arrays
-    rawEtData.dates_precip_fcst.forEach(function (e, i) {
-      const date = [year, ...e.split('/')].join('-');
-      const fcstValue = rawEtData.precip_fcst[i];
-      const idx = locHrly.findIndex((arr) => arr[0] === date);
-      if (idx !== -1) {
-        locHrly[idx].push(fcstValue);
-      }
-    });
+
+  // Convert and add forecast dates to data arrays
+  rawEtData.dates_precip_fcst.forEach(function (e, i) {
+    const date = [year, ...e.split('/')].join('-');
+    const fcstValue = rawEtData.precip_fcst[i];
+    const idx = locHrly.findIndex((arr) => arr[0] === date);
+    if (idx !== -1) {
+      locHrly[idx].push(fcstValue);
+    }
+  });
   locHrly = locHrly.filter((arr) => arr.length === 4);
+
+  if (locHrly.length && tempPrcpData.length && locHrly[0][0] === tempPrcpData[tempPrcpData.length - 1][0]) {
+    locHrly.shift();
+  }
+
   tempPrcpData = tempPrcpData.concat(locHrly);
 
   // let depthProfile = Array.from({length: constants.M + 2}, () => dpInit);
