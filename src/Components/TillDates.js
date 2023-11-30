@@ -60,6 +60,8 @@ export default function TillDates({ tillDates, setTillDates, dateRange }) {
     <Box>
       <FormLabel color='success' sx={{ fontSize: '12.5px' }}>Till Events</FormLabel>
 
+      {dateElems}
+
       <Box sx={{
         textAlign: 'center',
         marginTop: '3px'
@@ -77,8 +79,6 @@ export default function TillDates({ tillDates, setTillDates, dateRange }) {
           }}
         >Add Till Event</Button>
       </Box>
-
-      {dateElems}
     </Box>
   );
 }
