@@ -22,7 +22,7 @@ export default function TillInfo() {
   return (
     <InfoTooltip
       TransitionComponent={Zoom}
-      title="Information about till events."
+      title="On the till date you are starting with a new seedbank, but they are ready to emerge and there will be a flush before the behavior goes back to the emergence curve."
     >
       <InfoIcon sx={{ color: '#2f6dd5' }}/>
     </InfoTooltip>

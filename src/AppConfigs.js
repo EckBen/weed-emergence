@@ -98,24 +98,6 @@ const chartOptions = (year) => {
   };
 };
 
-const initEmergences = {
-  nrcc: {
-    pigweed: [],
-    ragweed: [],
-    velvetLeaf: [],
-    foxtail: [],
-    lambsquarter: []
-  },
-  weedcast: {
-    pigweed: [],
-    ragweed: [],
-    velvetLeaf: [],
-    largeCrabgrass: [],
-    foxtail: [],
-    lambsquarter: []
-  }
-};
-
 const yearItems = (begin, end) => {
   const items = [];
   for (let i = end; i >= begin; i--) {
@@ -138,7 +120,6 @@ const defaultLocation = {
 export {
   constants,
   chartOptions,
-  initEmergences,
   yearItems,
   defaultId,
   defaultLocation

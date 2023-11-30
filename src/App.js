@@ -9,11 +9,10 @@ import { name } from './Components/LocationPicker/LocationVariables';
 
 import fetchData from './Scripts/fetchData';
 import calcSoilTemps from './Scripts/calcSoilTemps';
-import calcEmergences from './Scripts/calcEmergences';
+import { calcEmergences, createInitEmergencesObj, createInitShowWeedsObj } from './Scripts/weedModels';
 
 import {
   constants,
-  initEmergences,
   defaultId,
   defaultLocation,
 } from './AppConfigs';
@@ -30,12 +29,15 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [year, setYear] = useState(new Date().getFullYear());
   const [soilTemps, setSoilTemps] = useState({});
-  const [emergences, setEmergences] = useState(initEmergences);
+  const [emergences, setEmergences] = useState(createInitEmergencesObj());
   const [tillDates, setTillDates] = useState([]);
   const [etWarning, setETWarning] = useState(false);
   const [showOptions, setShowOptions] = useState(window.innerWidth >= 700);
   const [showCharts, setShowCharts] = useState(false);
   const [showAddressSearch, setShowAddressSearch] = useState(false);
+  const [showWeeds, setShowWeeds] = useState(createInitShowWeedsObj(true));
+  const [calculatedSoilTexture, setCalculatedSoilTexture] = useState('');
+  const [selectedSoilTexture, setSelectedSoilTexture] = useState('');
 
   // Updates data when new location or time frame are selected
   useEffect(() => {
@@ -48,7 +50,6 @@ export default function App() {
           year,
           constants
         );
-        console.log(rawData);
         const newSoilTemps = await calcSoilTemps(
           year,
           rawData.etData,
@@ -57,8 +58,8 @@ export default function App() {
           rawData.buckets,
           constants
         );
-        console.log(newSoilTemps);
-        console.log(rawData.etData === null);
+        setSelectedSoilTexture(rawData.buckets.texture);
+        setCalculatedSoilTexture(rawData.buckets.texture);
         setSoilTemps(newSoilTemps);
         setETWarning(rawData.etData === null);
       } catch {
@@ -71,13 +72,14 @@ export default function App() {
 
   // Calculates new emergences when data or till events change
   useEffect(() => {
-    if (Object.keys(soilTemps).length > 0) {
-      setEmergences(calcEmergences(soilTemps, 'two'));
-      // setEmergences(calcEmergences(soilTemps, 'two', tillDates));
+    if (Object.keys(soilTemps).length > 0 && selectedSoilTexture) {
+      console.log('fire calc emergences');
+      setEmergences(calcEmergences(soilTemps, 'two', selectedSoilTexture));
+      // setEmergences(calcEmergences(soilTemps, 'two', selectedSoilTexture, tillDates));
     } else {
-      setEmergences(initEmergences);
+      setEmergences(createInitEmergencesObj());
     }
-  }, [soilTemps, tillDates]);
+  }, [soilTemps, selectedSoilTexture, tillDates]);
 
   // Ensures that charts fill parent div after options panel opens or closes
   useEffect(() => {
@@ -141,6 +143,19 @@ export default function App() {
     setLocations(newLocations);
   };
 
+  const handleToggleWeed = (weedName) => {
+    let newShowWeeds;
+    if (weedName === 'all') {
+      newShowWeeds = createInitShowWeedsObj(true);
+    } else if (weedName === 'none') {
+      newShowWeeds = createInitShowWeedsObj(false);
+    } else {
+      newShowWeeds = { ...showWeeds };
+      newShowWeeds[weedName] = !newShowWeeds[weedName];
+    }
+    setShowWeeds(newShowWeeds);
+  };
+
   return (
     <Box
       sx={{
@@ -157,6 +172,14 @@ export default function App() {
         soilTemps={soilTemps}
         show={showOptions}
         setShow={handleShow}
+        showCharts={showCharts}
+        handleToggleWeed={handleToggleWeed}
+        showWeeds={showWeeds}
+        soilTexture={{
+          calc: calculatedSoilTexture,
+          user: selectedSoilTexture,
+          handleChangeSelected: setSelectedSoilTexture
+        }}
       />
 
       <LocationPicker
@@ -176,8 +199,8 @@ export default function App() {
           showOptions={showOptions}
           soilTemps={soilTemps}
           year={year}
-          setShow={handleShow}
           tillDates={tillDates}
+          showWeeds={showWeeds}
         />
       )}
     </Box>

@@ -1,14 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { Box, TextField, FormLabel } from '@mui/material';
+import { Box, TextField, FormLabel, Button, MenuItem } from '@mui/material';
 import { formatISO } from 'date-fns';
 
 import TillDates from './TillDates';
+import SpeciesSelectors from './SpeciesSelectors';
 
 import {
   yearItems
 } from '../AppConfigs';
+import { soilTextureOptions } from '../Scripts/getSoilData';
 
 
 export default function OptionsPanel({
@@ -19,7 +21,11 @@ export default function OptionsPanel({
   setTillDates,
   soilTemps,
   show,
-  setShow
+  setShow,
+  showCharts,
+  handleToggleWeed,
+  showWeeds,
+  soilTexture
 }) {
   return (
     <Box sx={{
@@ -60,13 +66,28 @@ export default function OptionsPanel({
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        gap: 5,
-        overflowY: 'auto'
+        overflowY: 'auto',
+        gap: 5
       }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <FormLabel color='success' sx={{ fontSize: '12.5px' }}>Location</FormLabel>
           <Box sx={{ textAlign: 'center' }}>{location}</Box>
+          <Button
+            sx={{
+              margin: '6px auto 0px',
+              width: 'fit-content',
+              fontSize: 12,
+              backgroundColor: showCharts ? 'rgb(237, 142, 0)' : 'rgb(200,200,200)',
+              color: 'white',
+              '&:hover': {
+                backgroundColor: 'rgb(207, 112, 0)'
+              }
+            }}
+            onClick={() => setShow('map')}
+            disabled={!showCharts}
+          >Change Location</Button>
         </Box>
+
         <TextField
           select
           value={year}
@@ -77,11 +98,26 @@ export default function OptionsPanel({
         >
           {yearItems(2002, new Date().getFullYear())}
         </TextField>
+
+        <TextField
+          select
+          value={soilTexture.user}
+          onChange={(e) => soilTexture.handleChangeSelected(e.target.value)}
+          variant='standard'
+          sx={{textAlign: 'center'}}
+          label='Soil Texture'
+          helperText={`Recommended soil texture for this location is ${soilTexture.calc}`}
+        >
+          {soilTextureOptions.map(({ name, value }) => <MenuItem key={value} value={value}>{name}</MenuItem>)}
+        </TextField>
+        
         <TillDates
           tillDates={tillDates}
           setTillDates={setTillDates}
           dateRange={Object.keys(soilTemps).length > 0 ? [soilTemps.dates[0], soilTemps.dates[soilTemps.dates.length - 1]] : [formatISO(new Date()), formatISO(new Date())]}
         />
+        
+        <SpeciesSelectors handleToggleWeed={handleToggleWeed} showWeeds={showWeeds} />
       </Box>
     </Box>
   );
@@ -95,5 +131,9 @@ OptionsPanel.propTypes = {
   setTillDates: PropTypes.func,
   soilTemps: PropTypes.object,
   show: PropTypes.bool,
-  setShow: PropTypes.func
+  showCharts: PropTypes.bool,
+  setShow: PropTypes.func,
+  handleToggleWeed: PropTypes.func,
+  showWeeds: PropTypes.object,
+  soilTexture: PropTypes.object
 };

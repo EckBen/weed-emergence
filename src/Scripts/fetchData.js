@@ -1,3 +1,5 @@
+import { fetchSoilDataViaPostRest } from './getSoilData';
+
 import { format, subDays } from 'date-fns';
 
 const fetchETData = (coords, year) => {
@@ -58,125 +60,7 @@ const fetchLocHrly = (coords) => {
     .catch(() => null);
 };
 
-const fetchSoilDataViaPostRest = (
-  loc,
-  bucketDepth,
-  topBucket,
-  bottomBucket
-) => {
-  let query = `SELECT claytotal_r, dbthirdbar_r, wthirdbar_r, hzdept_r, hzdepb_r, comppct_r, compname
-    FROM mapunit AS mu
-    LEFT OUTER JOIN component AS c ON mu.mukey = c.mukey
-    INNER JOIN chorizon AS ch ON c.cokey = ch.cokey
-    WHERE mu.mukey IN (SELECT * from SDA_Get_Mukey_from_intersection_with_WktWgs84('point (${loc})'))`;
 
-  let results = fetch(
-    'https://sdmdataaccess.sc.egov.usda.gov/tabular/post.rest',
-    {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        format: 'JSON',
-        query: query,
-      }),
-    }
-  )
-    .then((res) => res.json())
-    .then((jData) => {
-      return jData.Table;
-    })
-    .then((table) =>
-      convertTableToBuckets(table, bucketDepth, topBucket, bottomBucket)
-    )
-    .catch((e) => {
-      console.log(e);
-      console.log('failed soil data...');
-    });
-
-  return results;
-};
-
-const convertTableToBuckets = (
-  dataList,
-  bucketDepth,
-  topBucket,
-  bottomBucket
-) => {
-  const most = Math.max(...dataList.map((arr) => parseFloat(arr[5])));
-  dataList = dataList.filter(
-    (arr) => arr[5] === String(most) && !arr.includes(null)
-  );
-
-  const results = dataList.reduce(
-    (buckets, horizon, i) => {
-      const topInches = parseFloat(horizon[3]) / 2.54;
-      let bottomInches = parseFloat(horizon[4]) / 2.54;
-      if (topInches < bucketDepth) {
-        // Handle ending before entire bucketDepth is accounted for or if horizons have more depth than bucketDepth
-        if (
-          (i === dataList.length - 1 && bottomInches < bucketDepth) ||
-          bottomInches > bucketDepth
-        ) {
-          bottomInches = bucketDepth;
-        }
-
-        // Calculate distance from bucket divider
-        const hTop = topBucket - topInches;
-        const hBottom = topBucket - bottomInches;
-
-        // Calculate amount of horizon in each bucket
-        let topPart = 0,
-          bottomPart = 0;
-        if (hTop > 0 && hBottom < 0) {
-          // part in each bucket
-          topPart = hTop;
-          bottomPart = Math.abs(hBottom);
-        } else if (hTop >= 0 && hBottom >= 0) {
-          // all in topBucket
-          topPart = hTop - hBottom;
-        } else {
-          // all in bottomBucket
-          bottomPart = Math.abs(hTop - hBottom);
-        }
-
-        // Add weighted portion of variables to summing obj for each bucket
-        if (topPart) {
-          topPart = topPart / topBucket;
-          buckets.top.clayProportion +=
-            (parseFloat(horizon[0]) / 100) * topPart;
-          buckets.top.bulkDensity += parseFloat(horizon[1]) * topPart;
-          buckets.top.wvMax += (parseFloat(horizon[2]) / 100) * topPart;
-        }
-
-        if (bottomPart) {
-          bottomPart = bottomPart / bottomBucket;
-          buckets.bottom.clayProportion +=
-            (parseFloat(horizon[0]) / 100) * bottomPart;
-          buckets.bottom.bulkDensity += parseFloat(horizon[1]) * bottomPart;
-          buckets.bottom.wvMax += (parseFloat(horizon[2]) / 100) * bottomPart;
-        }
-      }
-
-      return buckets;
-    },
-    {
-      top: {
-        clayProportion: 0,
-        bulkDensity: 0,
-        wvMax: 0,
-      },
-      bottom: {
-        clayProportion: 0,
-        bulkDensity: 0,
-        wvMax: 0,
-      },
-    }
-  );
-  return results;
-};
 
 const fetchData = async (coords, year, constants) => {
   const sDate = new Date(year, 1, 27); // Feb 27th
@@ -192,9 +76,8 @@ const fetchData = async (coords, year, constants) => {
     fetchLocHrly(coords),
     fetchSoilDataViaPostRest(
       coords.join(' '),
-      constants.bucketDepth,
-      constants.topBucket,
-      constants.bottomBucket()
+      { top: 0, bottom: constants.topBucket },
+      { top: constants.topBucket, bottom: constants.topBucket + constants.bottomBucket() }
     ),
   ]);
 

@@ -119,7 +119,7 @@ const soil2InchModel = (
         thermalConductivity(
           buckets.top.bulkDensity,
           wvTopPerInch,
-          buckets.top.clayProportion,
+          buckets.top.clay,
           depthProfile[i]
         ) /
         (z[i + 1] - z[i]);
@@ -134,7 +134,7 @@ const soil2InchModel = (
         thermalConductivity(
           buckets.bottom.bulkDensity,
           wvBottomPerInch,
-          buckets.bottom.clayProportion,
+          buckets.bottom.clay,
           depthProfile[i]
         ) /
         (z[i + 1] - z[i]);
@@ -318,6 +318,7 @@ const calcSoilTemps = (
     // et: [],
     // one: [],
     two: [],
+    topVwc: [],
     // four: [],
     // wvs: [[],[]],
     // topMax,
@@ -371,9 +372,12 @@ const calcSoilTemps = (
     // results.wvs[0].push(wvTop);
     // results.wvs[1].push(wvBottom);
 
+
     // results.one.push((9/5) * oneInchSoil + 32);
     results.two.push((9 / 5) * twoInchSoil + 32);
     // results.four.push((9/5) * fourInchSoil + 32);
+    
+    results.topVwc.push(wvTop / constants.topBucket);
   }
 
   return results;

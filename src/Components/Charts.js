@@ -1,66 +1,31 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { Box, Button } from '@mui/material';
+import { Box } from '@mui/material';
 
 import Loading from './Loading';
 import Chart from './Chart';
 import ChartContainer from './ChartContainer';
 
 import { chartOptions } from '../AppConfigs';
-
-// Inputs: arr- Array, targetLength- number, fillValue- any value valid to place in an Array, append- optional, boolean, defaults to true
-// Adds targetLength number of fillValue to beginning or end (determined by optional append bollean) of arr
-function fillWith(arr, targetLength, fillValue, append=true) {
-  const diff = targetLength - arr.length;
-  if (diff <= 0) return arr;
-
-  const newPortion = new Array(diff).fill(fillValue);
-  return append ? arr.concat(newPortion) : newPortion.concat(arr);
-}
-
-function constructSeries(model, names, data, isThisYear) {
-  return names.map(([name, color]) => {
-    const nameParts = name.split(' ');
-    nameParts[0] = nameParts[0].toLowerCase();
-    const id = nameParts.join('');
-    const thisData = data[model][id]; 
-
-    if (isThisYear) {
-      return [{
-        data: thisData.slice(0,-2),
-        name,
-        color,
-        id: model + '-' + id,
-        isForecast: false
-      },{
-        data: fillWith(thisData.slice(-2), thisData.length, null, false),
-        name,
-        color,
-        dashStyle: 'ShortDot',
-        linkedTo: model + '-' + id,
-        isForecast: true
-      }];
-    } else {
-      return [{
-        data: thisData,
-        name,
-        color,
-        id: model + '-' + id,
-        isForecast: false
-      }];
-    }
-  }).reduce((acc, arr) => acc.concat(arr), []);
-}
+import { constructSeries, models } from '../Scripts/weedModels';
 
 
 
-export default function Charts({ loading, etWarning, emergences, showOptions, soilTemps, year, setShow, tillDates }) {
+
+
+
+
+export default function Charts({ loading, etWarning, emergences, showOptions, soilTemps, year, tillDates, showWeeds }) {
   const categories = Object.keys(soilTemps).length > 0 ? soilTemps.dates : [];
+  let lastTillIdx = 0;
   const plotLines = tillDates.map(date => {
+    const value = categories.findIndex(el => el === date);
+    if (value > lastTillIdx) lastTillIdx = value;
+    
     return {
       className: 'tillLine',
-      value: categories.findIndex(el => el === date),
+      value,
       width: 2,
       color: 'rgb(237, 142, 0)',
       label: {
@@ -105,26 +70,7 @@ export default function Charts({ loading, etWarning, emergences, showOptions, so
   };
   
   const isThisYear = new Date().getFullYear() === year;
-
-  const nrccWeeds = [
-    ['Foxtail', '#D9ED92'],
-    ['Lambsquarter', '#99D98C'],
-    ['Pigweed', '#34A0A4'],
-    ['Ragweed', '#1A759F'],
-    ['Velvet Leaf', '#184E77']
-  ];
-  const nrccSeries = constructSeries('nrcc', nrccWeeds, emergences, isThisYear);
-
-  const weedcastWeeds = [
-    ['Foxtail', '#D9ED92'],
-    ['Lambsquarter', '#99D98C'],
-    ['Large Crabgrass', '#52B69A'],
-    ['Pigweed', '#34A0A4'],
-    ['Ragweed', '#1A759F'],
-    ['Velvet Leaf', '#184E77']
-  ];
-  const weedcastSeries = constructSeries('weedcast', weedcastWeeds, emergences, isThisYear);
-
+  const series = constructSeries(emergences, isThisYear, showWeeds, lastTillIdx);
   
   return (
     <Box
@@ -132,8 +78,9 @@ export default function Charts({ loading, etWarning, emergences, showOptions, so
         position: 'absolute',
         top: 0,
         right: 0,
-        height: '100vh',
-        minHeight: 860,
+        // height: '100vh',
+        // minHeight: 860,
+        minHeight: '100vh',
         width: `calc(100% - ${showOptions ? '200' : 0}px)`,
         paddingLeft: showOptions ? 200 : 0,
         backgroundColor: 'rgb(240,240,240)',
@@ -151,57 +98,29 @@ export default function Charts({ loading, etWarning, emergences, showOptions, so
           flexDirection: 'column',
           justifyContent: 'space-evenly',
           width: '100%',
-          height: '100%'
+          height: '100%',
+          overflow: 'auto'
         }}>
-          <Button
-            sx={{
-              margin: '0 auto',
-              width: 'fit-content',
-              fontSize: 12,
-              backgroundColor: 'rgb(237, 142, 0)',
-              color: 'white',
-              '&:hover': {
-                backgroundColor: 'rgb(207, 112, 0)'
-              }
-            }}
-            onClick={() => setShow('map')}
-          >Hide Charts</Button>
-
-          <ChartContainer
-            showWarning={etWarning}
-            showInfo={plotLines.length > 0}
-            sx={chartSx}
-          >
-            <Chart
-              categories={categories}
-              series={nrccSeries}
-              options={{
-                ...chartOptions(year),
-                subtitle: {
-                  text: 'NRCC Weed Emergence Models',
-                },
-                xAxis: { plotLines }
-              }}
-            />
-          </ChartContainer>
-
-          <ChartContainer
-            showWarning={etWarning}
-            showInfo={plotLines.length > 0}
-            sx={chartSx}
-          >
-            <Chart
-              categories={categories}
-              series={weedcastSeries}
-              options={{
-                ...chartOptions(year),
-                subtitle: {
-                  text: 'Weedcast Weed Emergence Models'
-                },
-                xAxis: { plotLines }
-              }}
-            />
-          </ChartContainer>
+          {models.map(model => 
+            <ChartContainer
+              key={model}
+              showWarning={etWarning}
+              showInfo={plotLines.length > 0}
+              sx={chartSx}
+            >
+              <Chart
+                categories={categories}
+                series={series[model]}
+                options={{
+                  ...chartOptions(year),
+                  subtitle: {
+                    text: `${model} Weed Emergence Models`,
+                  },
+                  xAxis: { plotLines }
+                }}
+              />
+            </ChartContainer>
+          )}
         </Box>
       }
     </Box>
@@ -215,6 +134,6 @@ Charts.propTypes = {
   soilTemps: PropTypes.object,
   year: PropTypes.number,
   showOptions: PropTypes.bool,
-  setShow: PropTypes.func,
-  tillDates: PropTypes.array
+  tillDates: PropTypes.array,
+  showWeeds: PropTypes.object
 };

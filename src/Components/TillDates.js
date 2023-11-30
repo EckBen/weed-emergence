@@ -67,6 +67,7 @@ export default function TillDates({ tillDates, setTillDates, dateRange }) {
         <Button
           onClick={() => setTillDates(prev => [...prev, dateRange[0]])}
           sx={{
+            marginTop: '10px',
             fontSize: 12,
             backgroundColor: 'rgb(237, 142, 0)',
             color: 'white',
