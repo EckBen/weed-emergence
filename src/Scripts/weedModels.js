@@ -331,15 +331,14 @@ const calcEmergences = (soilTemps, depth, selectedSoilTexture, tillDates) => {
   const vwcToWaterPotential = soilTextureOptions.find(sto => sto.value === selectedSoilTexture).vwcToWaterPotential;
   const waterPotentials = soilTemps.topVwc.map(vwc => vwcToWaterPotential(vwc));
   const soilTempsC = soilTemps.two.map(t => (t - 32) * (5 / 9));
-  console.log(soilTemps.topVwc, soilTempsC, waterPotentials);
   weedSpecies.forEach(weedObj => {
     if (weedObj.mohsen === null) {
       emergences['mohsen'][weedObj.id] = null;
     } else {
       const htts = calcHydroThermalTime(soilTempsC, waterPotentials, weedObj.mohsen);
-      console.log(weedObj.name, htts);
+      // console.log(weedObj.name, htts);
       emergences['mohsen'][weedObj.id] = htts.map(htt => Math.round(mohsensPWeibul(htt, weedObj.mohsen) * 100));
-      // console.log(weedObj.name, weedObj.mohsen, htts, emergences['mohsen'][weedObj.id]);
+      console.log(weedObj.name, emergences['mohsen'][weedObj.id]);
     }
   });
 
