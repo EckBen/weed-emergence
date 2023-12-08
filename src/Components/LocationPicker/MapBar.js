@@ -53,7 +53,7 @@ export default function MapBar({ token, allowedStates, bbox, mapRef, handleChang
         }
       })
       .catch(e => {
-        console.log(e);
+        console.error(e);
         return false;
       });
   };

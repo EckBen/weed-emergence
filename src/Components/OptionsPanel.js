@@ -10,7 +10,7 @@ import SpeciesSelectors from './SpeciesSelectors';
 import {
   yearItems
 } from '../AppConfigs';
-import { soilTextureOptions } from '../Scripts/getSoilData';
+import { soilTextureOptions } from '../Scripts/soil';
 
 
 export default function OptionsPanel({
@@ -21,7 +21,7 @@ export default function OptionsPanel({
   setYear,
   tillDates,
   setTillDates,
-  soilTemps,
+  tillRange,
   show,
   setShow,
   showCharts,
@@ -116,7 +116,7 @@ export default function OptionsPanel({
         <TillDates
           tillDates={tillDates}
           setTillDates={setTillDates}
-          dateRange={Object.keys(soilTemps).length > 0 ? [soilTemps.dates[0], soilTemps.dates[soilTemps.dates.length - 1]] : [formatISO(today), formatISO(today)]}
+          dateRange={tillRange || [formatISO(today), formatISO(today)]}
         />
         
         <SpeciesSelectors handleToggleWeed={handleToggleWeed} showWeeds={showWeeds} />
@@ -133,7 +133,7 @@ OptionsPanel.propTypes = {
   setYear: PropTypes.func,
   tillDates: PropTypes.array,
   setTillDates: PropTypes.func,
-  soilTemps: PropTypes.object,
+  tillRange: PropTypes.array,
   show: PropTypes.bool,
   showCharts: PropTypes.bool,
   setShow: PropTypes.func,

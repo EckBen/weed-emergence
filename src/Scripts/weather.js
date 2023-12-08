@@ -103,7 +103,7 @@ async function fetchLocHourlyFore(lat, lon, sDate) {
   return daily;
 }
 
-async function fetchAcisData(lat, lon, eDate) {
+async function fetchPrecipAndTempData(lat, lon, eDate) {
   const [obs, fore] = await Promise.all([
     fetchAcisObs(lat, lon, eDate),
     fetchLocHourlyFore(lat, lon, eDate)
@@ -139,14 +139,14 @@ async function fetchPETData(lat, lon, todayStr) {
   };
 }
 
-export async function getWeatherData([lon, lat], date) {
-    try {
+export async function getWeatherData({lng: lon, lat}, date) {
+  try {
     // fetch PET and precip
     let [
       { weather, weatherFcstLength },
       { pet, petFcstLength }
     ] = await Promise.all([
-      fetchAcisData(lat, lon, date),
+      fetchPrecipAndTempData(lat, lon, date),
       fetchPETData(lat, lon, date)
     ]);
 

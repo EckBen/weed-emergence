@@ -1,14 +1,16 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { Box } from '@mui/material';
+import Highcharts from 'highcharts';
+import { format } from 'date-fns';
 
 import Charts from './Components/Charts';
-
 import OptionsPanel from './Components/OptionsPanel';
 import LocationPicker from './Components/LocationPicker/LocationPicker';
 import { name } from './Components/LocationPicker/LocationVariables';
 
-import fetchData from './Scripts/fetchData';
-import calcSoilTemps from './Scripts/calcSoilTemps';
+import { fetchSoilDataViaPostRest, calcVwcAndSoilTemp } from './Scripts/soil';
+import { getWeatherData } from './Scripts/weather';
 import { calcEmergences, createInitEmergencesObj, createInitShowWeedsObj } from './Scripts/weedModels';
 
 import {
@@ -16,8 +18,6 @@ import {
   defaultId,
   defaultLocation,
 } from './AppConfigs';
-import Highcharts from 'highcharts';
-import { calcVwcAndSoilTemp } from './Scripts/vwcAndSoilTemp';
 
 
 const today = new Date();
@@ -33,7 +33,6 @@ export default function App() {
   });
   const [loading, setLoading] = useState(false);
   const [year, setYear] = useState(latestSeason);
-  const [soilTemps, setSoilTemps] = useState({});
   const [emergences, setEmergences] = useState(createInitEmergencesObj());
   const [tillDates, setTillDates] = useState([]);
   const [etWarning, setETWarning] = useState(false);
@@ -43,7 +42,7 @@ export default function App() {
   const [showWeeds, setShowWeeds] = useState(createInitShowWeedsObj(true));
   const [calculatedSoilTexture, setCalculatedSoilTexture] = useState('');
   const [selectedSoilTexture, setSelectedSoilTexture] = useState('');
-  const [wdmData, setWDMData] = useState(null);
+  const [modelData, setModelData] = useState(null);
 
   // Updates data when new location or time frame are selected
   useEffect(() => {
@@ -52,40 +51,21 @@ export default function App() {
       try {
         const currLoc = locations[selected];
 
-        const { etData, tempPrcpData, locHrly, buckets, weatherData } = await fetchData(
-          [currLoc.lng, currLoc.lat],
-          year,
-          today,
-          constants
-        );
+        const [soilComposition, weatherData] = await Promise.all([
+          fetchSoilDataViaPostRest(`${currLoc.lng} ${currLoc.lat}`, 0, 36),
+          getWeatherData(currLoc, year + '-' + format(today, 'MM-dd'))
+        ]);
 
-        const newSoilTemps = calcSoilTemps(
-          year,
-          etData,
-          tempPrcpData,
-          locHrly,
-          buckets,
-          constants
-        );
+        setModelData({ soilComposition, weatherData });
 
-
-        // console.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!${year} ${buckets.texture}!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-        // console.log(weatherData.dates);
-        // console.log('------------Original---------------');
-        // console.log('VWCs: ', newSoilTemps.topVwc);
-        // console.log('Soil Temps: ', newSoilTemps.two.map(tempF => (tempF - 32) * (5 / 9)));
-        // console.log('Emergence: ', calcEmergences(newSoilTemps, 'two', buckets.texture).mohsen.ragweed);
-        // console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
-
-        
-        setSoilTemps(newSoilTemps);
-        setWDMData({ buckets, weatherData });
-        setSelectedSoilTexture(buckets.texture);
-        setCalculatedSoilTexture(buckets.texture);
-        setETWarning(etData === null);
+        if (selectedSoilTexture && calculatedSoilTexture && (selectedSoilTexture === calculatedSoilTexture)) {
+          setSelectedSoilTexture(soilComposition.texture);
+        }
+        setCalculatedSoilTexture(soilComposition.texture);
+        setETWarning(weatherData === null);
       } catch (e) {
         console.error(e);
-        setSoilTemps({});
+        setModelData(null);
         setETWarning(true);
       }
       setLoading(false);
@@ -94,39 +74,31 @@ export default function App() {
 
   // Calculates new emergences when data or till events change
   useEffect(() => {
-    if (wdmData) {
-      const { buckets, weatherData } = wdmData;
-      
-      const vwcsAndSoilTemps = calcVwcAndSoilTemp(
-        weatherData,
-        buckets.vwcAndTempValues,
-        selectedSoilTexture,
-        constants,
-        0
-      );
+    if (modelData && selectedSoilTexture) {
+      try {
+        const { soilComposition, weatherData } = modelData;
+        
+        const vwcsAndSoilTemps = calcVwcAndSoilTemp(
+          weatherData,
+          soilComposition,
+          selectedSoilTexture,
+          constants,
+          0
+        );
 
-      console.log(buckets);
+        if (!vwcsAndSoilTemps) throw new Error('Could not calculate VWCs and soil temperatures');
+        const newEmergences = calcEmergences(vwcsAndSoilTemps, selectedSoilTexture);
+        // const newEmergences = calcEmergences(vwcsAndSoilTemps, selectedSoilTexture, tillDates);
 
-      console.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!${year}!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-      console.log('------------Water Deficit---------------');
-      console.log('Dates: ', vwcsAndSoilTemps.dates);
-      console.log('VWCs: ', vwcsAndSoilTemps.vwcs);
-      console.log('Soil Temps: ', vwcsAndSoilTemps.soilTempC);
-      const output = calcEmergences({ two: vwcsAndSoilTemps.soilTempC, dates: vwcsAndSoilTemps.dates, topVwc: vwcsAndSoilTemps.vwcs }, 'two', selectedSoilTexture, false);
-      Object.entries(output.mohsen).forEach(([name, arr]) => console.log(name, arr));
-      console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
-    }
-    
-    
-    
-    if (Object.keys(soilTemps).length > 0 && selectedSoilTexture) {
-      // console.log('fire calc emergences');
-      setEmergences(calcEmergences(soilTemps, 'two', selectedSoilTexture));
-      // setEmergences(calcEmergences(soilTemps, 'two', selectedSoilTexture, tillDates));
+        setEmergences(newEmergences);
+      } catch (e) {
+        console.error(e);
+        setEmergences(createInitEmergencesObj());
+      }
     } else {
       setEmergences(createInitEmergencesObj());
     }
-  }, [soilTemps, wdmData, selectedSoilTexture, tillDates]);
+  }, [modelData, selectedSoilTexture, tillDates]);
 
   // Ensures that charts fill parent div after options panel opens or closes
   useEffect(() => {
@@ -218,7 +190,7 @@ export default function App() {
         setYear={setYear}
         tillDates={tillDates}
         setTillDates={setTillDates}
-        soilTemps={soilTemps}
+        tillRange={(modelData && modelData.weatherData) ? [modelData.weatherData.dates[0], modelData.weatherData.dates[modelData.weatherData.dates.length - 1]] : null}
         show={showOptions}
         setShow={handleShow}
         showCharts={showCharts}
@@ -246,7 +218,7 @@ export default function App() {
           etWarning={etWarning}
           emergences={emergences}
           showOptions={showOptions}
-          soilTemps={soilTemps}
+          categories={(modelData && modelData.weatherData) ? modelData.weatherData.dates : []}
           latestSeason={latestSeason}
           year={year}
           tillDates={tillDates}

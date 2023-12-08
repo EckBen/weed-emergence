@@ -1,4 +1,4 @@
-import { soilTextureOptions } from './getSoilData';
+import { soilTextureOptions } from './soil';
 
 // amaranthus alba - prostrate pigweed - AMAAL
 // s pumila/clauca - yellow foxtail - SETLU
@@ -272,23 +272,24 @@ const createInitShowWeedsObj = (initValue) => {
   }, {});
 };
 
-const calcGDDAccumulations = (soilTemps, depth) => {
-  if (Object.keys(soilTemps).length === 0) return [];
+const calcGDDAccumulations = (soilTemps, dates, tillDates=[]) => {
+  if (soilTemps.length === 0) throw new Error('No soil temperatures to calculate GDDs from');
+  
+  let stubbedTillDates = [...tillDates];
+  stubbedTillDates = [];
 
   let sum = 0;
-  return soilTemps[depth].map((soilTemp, i) => {
-    const date = soilTemps.dates[i];
+  return soilTemps.map((soilTemp, i) => {
+    const date = dates[i];
+    const tempF = (soilTemp * (9 / 5)) + 32;
 
-    // If tillDates should affect accumulation, need to pass them in again
-    // if (tillDates.includes(date)) {
-    //   sum = 0;
-    // } else {
-    //   sum += Math.max(0, soilTemp - 50);
-    // }
-    
-    
-    sum += Math.max(0, soilTemp - 50);
-    
+    // If tillDates should affect accumulation
+    if (stubbedTillDates.includes(date)) {
+      sum = 0;
+    } else {
+      sum += Math.max(0, tempF - 50);
+    }
+
     return [date, sum];
   });
 };
@@ -315,12 +316,10 @@ const mohsensPWeibul = (htt, weedConstants) => {
   return 1 - Math.exp(-((scale * time) ** shape));
 };
 
-const calcEmergences = (soilTemps, depth, selectedSoilTexture, convertTemps=true, tillDates=[]) => {
-  // console.log(soilTemps, depth, selectedSoilTexture, tillDates);
+const calcEmergences = (vwcsAndSoilTemps, selectedSoilTexture, tillDates=[]) => {
   const emergences = createInitEmergencesObj();
   const gddModels = models.filter(m => m !== 'Mohsen');
-  const gdds = calcGDDAccumulations(soilTemps, depth, tillDates);
-  // console.log(gdds);
+  const gdds = calcGDDAccumulations(vwcsAndSoilTemps.soilTempC, vwcsAndSoilTemps.dates, tillDates);
   gdds.forEach(gdd => {
     gddModels.forEach(model => {
       const modelName = model.toLowerCase();
@@ -329,19 +328,16 @@ const calcEmergences = (soilTemps, depth, selectedSoilTexture, convertTemps=true
       });
     });
   });
-  
+
   const vwcToWaterPotential = soilTextureOptions.find(sto => sto.value === selectedSoilTexture).vwcToWaterPotential;
-  const waterPotentials = soilTemps.topVwc.map(vwc => vwcToWaterPotential(vwc));
-  
-  const soilTempsC = convertTemps ? soilTemps.two.map(t => (t - 32) * (5 / 9)) : soilTemps.two;
+  const waterPotentials = vwcsAndSoilTemps.vwcs.map(vwc => vwcToWaterPotential(vwc));
   
   weedSpecies.forEach(weedObj => {
     if (weedObj.mohsen === null) {
       emergences['mohsen'][weedObj.id] = null;
     } else {
-      const htts = calcHydroThermalTime(soilTempsC, waterPotentials, weedObj.mohsen);
+      const htts = calcHydroThermalTime(vwcsAndSoilTemps.soilTempC, waterPotentials, weedObj.mohsen);
       emergences['mohsen'][weedObj.id] = htts.map(htt => Math.round(mohsensPWeibul(htt, weedObj.mohsen) * 100));
-      // console.log(weedObj.name, emergences['mohsen'][weedObj.id]);
     }
   });
 
