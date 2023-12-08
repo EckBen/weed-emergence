@@ -44,33 +44,46 @@ export default function App() {
   const [selectedSoilTexture, setSelectedSoilTexture] = useState('');
   const [modelData, setModelData] = useState(null);
 
-  // Updates data when new location or time frame are selected
-  useEffect(() => {
-    (async () => {
+  const updateModelData = async (whatUpdated) => {
+    if (selected && year) {
       setLoading(true);
       try {
         const currLoc = locations[selected];
-
-        const [soilComposition, weatherData] = await Promise.all([
-          fetchSoilDataViaPostRest(`${currLoc.lng} ${currLoc.lat}`, 0, 36),
-          getWeatherData(currLoc, year + '-' + format(today, 'MM-dd'))
-        ]);
-
-        setModelData({ soilComposition, weatherData });
-
-        if (selectedSoilTexture && calculatedSoilTexture && (selectedSoilTexture === calculatedSoilTexture)) {
+  
+        if (whatUpdated === 'location') {
+          const [soilComposition, weatherData] = await Promise.all([
+            fetchSoilDataViaPostRest(`${currLoc.lng} ${currLoc.lat}`, 0, 36),
+            getWeatherData(currLoc, year + '-' + format(today, 'MM-dd'))
+          ]);
+    
+          setModelData({ soilComposition, weatherData });
           setSelectedSoilTexture(soilComposition.texture);
+          setCalculatedSoilTexture(soilComposition.texture);
+          setETWarning(weatherData === null);
+        } else if (whatUpdated === 'year') {
+          const weatherData = await getWeatherData(currLoc, year + '-' + format(today, 'MM-dd'));
+          setModelData({ ...modelData, weatherData });
+          setETWarning(weatherData === null);
         }
-        setCalculatedSoilTexture(soilComposition.texture);
-        setETWarning(weatherData === null);
       } catch (e) {
         console.error(e);
         setModelData(null);
         setETWarning(true);
       }
       setLoading(false);
-    })();
-  }, [selected, year]);
+    } 
+  };
+
+
+  // Updates data when new location is selected
+  useEffect(() => {
+    updateModelData('location');
+  }, [selected]);
+
+  // Updates data when new year is selected
+  useEffect(() => {
+    updateModelData('year');
+  }, [year]);
 
   // Calculates new emergences when data or till events change
   useEffect(() => {
