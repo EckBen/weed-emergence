@@ -10,6 +10,7 @@ const getDateAdjustment = (etData, tempPrcpData, year) => {
   const etParts = etData.dates_pet[0].split('/');
   const tempPrcpParts = tempPrcpData[0][0].split('-');
   tempPrcpParts[1] = parseInt(tempPrcpParts[1]) - 1;
+  // console.log(etParts, tempPrcpParts);
   return differenceInCalendarDays(
     new Date(year, parseInt(etParts[0]) - 1, etParts[1]),
     new Date(...tempPrcpParts)
@@ -248,6 +249,14 @@ const calcSoilTemps = (
   buckets,
   constants
 ) => {
+  // console.log(
+  //   year,
+  //   rawEtData,
+  //   tempPrcpData,
+  //   locHrly,
+  //   buckets,
+  //   constants
+  // );
   const wvMax = round((buckets.top.wvMax + buckets.bottom.wvMax) / 2, 0.001);
   const sDate = new Date(year, 1, 27);
 
@@ -261,6 +270,7 @@ const calcSoilTemps = (
   let etData = null;
   if (rawEtData !== null) {
     DA = getDateAdjustment(rawEtData, tempPrcpData, year);
+    // console.log(DA);
 
     if (DA > 0) {
       const currentDateIdx = tempPrcpData.findIndex(
@@ -280,6 +290,8 @@ const calcSoilTemps = (
   } else {
     DA = 0;
   }
+
+  // console.log(etData);
 
 
   // Convert and add forecast dates to data arrays
@@ -329,6 +341,9 @@ const calcSoilTemps = (
     const date = addDays(sDate, i + DA);
     const tempsAndPrcp = tempPrcpData[i];
 
+    // console.log(`-----------${format(date, 'yyyy-MM-dd')}------------`);
+    // console.log(wvTop, etData[i], tempsAndPrcp[3], topMax);
+
     const maxTC = (tempsAndPrcp[1] - 32) * (5 / 9);
     const minTC = (tempsAndPrcp[2] - 32) * (5 / 9);
 
@@ -362,6 +377,22 @@ const calcSoilTemps = (
       inches,
       z
     );
+
+    // console.log(twoInchSoil);
+    // console.log(
+    //   constants,
+    //   TA,
+    //   AM,
+    //   wvTop,
+    //   wvTop / constants.topBucket,
+    //   wvBottom,
+    //   wvBottom / constants.bottomBucket(),
+    //   buckets,
+    //   depthProfile,
+    //   inches,
+    //   z
+    // );
+
 
     depthProfile = newDepthProfile;
 

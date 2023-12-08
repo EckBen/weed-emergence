@@ -1,6 +1,9 @@
 import { fetchSoilDataViaPostRest } from './getSoilData';
+import { getWeatherData } from './weatherData';
 
+// import { format } from 'date-fns';
 import { format, subDays } from 'date-fns';
+
 
 const fetchETData = (coords, year) => {
   return fetch(
@@ -61,17 +64,20 @@ const fetchLocHrly = (coords) => {
 };
 
 
+const fetchData = async (coords, year, today, constants) => {
+  const sDate = `${year}-02-27`; // Feb 27th
+  const eDate = `${year}-10-31`; // Oct 31st
 
-const fetchData = async (coords, year, constants) => {
-  const sDate = new Date(year, 1, 27); // Feb 27th
-  const today = new Date(year, 9, 31); // Oct 31st
+  if (today.getFullYear() !== year) {
+    today = new Date(year, today.getMonth(), today.getDate());
+  }
 
-  let [etData, tempPrcpData, locHrly, buckets] = await Promise.all([
+  let [etData, tempPrcpData, locHrly, buckets, weatherData] = await Promise.all([
     fetchETData(coords, year),
     fetchTempPrcpData(
       coords.join(','),
-      format(sDate, 'yyyy-MM-dd'),
-      format(today, 'yyyy-MM-dd')
+      sDate,
+      eDate
     ),
     fetchLocHrly(coords),
     fetchSoilDataViaPostRest(
@@ -79,9 +85,11 @@ const fetchData = async (coords, year, constants) => {
       { top: 0, bottom: constants.topBucket },
       { top: constants.topBucket, bottom: constants.topBucket + constants.bottomBucket() }
     ),
+    getWeatherData(coords, format(today, 'yyyy-MM-dd'))
   ]);
-
-  return { etData, tempPrcpData, locHrly, buckets };
+    
+  return { etData, tempPrcpData, locHrly, buckets, weatherData };
+  // return { weatherData, buckets };
 };
 
 export default fetchData;

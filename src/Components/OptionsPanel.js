@@ -15,6 +15,8 @@ import { soilTextureOptions } from '../Scripts/getSoilData';
 
 export default function OptionsPanel({
   location,
+  today,
+  latestSeason,
   year,
   setYear,
   tillDates,
@@ -96,7 +98,7 @@ export default function OptionsPanel({
           sx={{textAlign: 'center'}}
           label='Season'
         >
-          {yearItems(2002, new Date().getFullYear())}
+          {yearItems(2002, latestSeason)}
         </TextField>
 
         <TextField
@@ -114,7 +116,7 @@ export default function OptionsPanel({
         <TillDates
           tillDates={tillDates}
           setTillDates={setTillDates}
-          dateRange={Object.keys(soilTemps).length > 0 ? [soilTemps.dates[0], soilTemps.dates[soilTemps.dates.length - 1]] : [formatISO(new Date()), formatISO(new Date())]}
+          dateRange={Object.keys(soilTemps).length > 0 ? [soilTemps.dates[0], soilTemps.dates[soilTemps.dates.length - 1]] : [formatISO(today), formatISO(today)]}
         />
         
         <SpeciesSelectors handleToggleWeed={handleToggleWeed} showWeeds={showWeeds} />
@@ -125,6 +127,8 @@ export default function OptionsPanel({
 
 OptionsPanel.propTypes = {
   location: PropTypes.string,
+  today: PropTypes.instanceOf(Date),
+  latestSeason: PropTypes.number,
   year: PropTypes.number,
   setYear: PropTypes.func,
   tillDates: PropTypes.array,
