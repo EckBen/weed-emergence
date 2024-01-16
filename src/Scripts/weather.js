@@ -104,6 +104,8 @@ async function fetchLocHourlyFore(lat, lon, sDate) {
 }
 
 async function fetchPrecipAndTempData(lat, lon, eDate) {
+  if (eDate.slice(5) < '03-01') eDate = eDate.slice(0,5) + '10-31';
+
   const [obs, fore] = await Promise.all([
     fetchAcisObs(lat, lon, eDate),
     fetchLocHourlyFore(lat, lon, eDate)
@@ -113,6 +115,8 @@ async function fetchPrecipAndTempData(lat, lon, eDate) {
   while (fore.length && obs[obs.length - 1][0] === fore[0][0]) {
     fore.shift();
   }
+
+  console.log(fore);
 
   return {
     weather: obs.concat(fore),

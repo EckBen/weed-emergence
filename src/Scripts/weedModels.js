@@ -354,7 +354,7 @@ function fillWith(arr, targetLength, fillValue, append=true) {
   return append ? arr.concat(newPortion) : newPortion.concat(arr);
 }
 
-function constructSeries(data, isThisYear, showWeeds, lastTillIdx) {
+function constructSeries(data, showWeeds, lastTillIdx, fcstLength) {
   return models.reduce((acc, model) => {
     const modelName = model.toLowerCase();
     const modelWeeds = weedSpecies.filter(w => showWeeds[w.id] && w[modelName] !== null);
@@ -374,13 +374,13 @@ function constructSeries(data, isThisYear, showWeeds, lastTillIdx) {
         }]
       };
   
-      if (isThisYear) {
+      if (fcstLength > 0) {
         return [{
           ...baseObj,
-          data: thisData.slice(0,-2),
+          data: thisData.slice(0,-fcstLength),
         },{
           ...baseObj,
-          data: fillWith(thisData.slice(-2), thisData.length, null, false),
+          data: fillWith(thisData.slice(-fcstLength), thisData.length, null, false),
           dashStyle: 'ShortDot',
           linkedTo: seriesId,
           id: seriesId + '-forecast',

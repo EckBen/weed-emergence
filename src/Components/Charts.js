@@ -16,7 +16,7 @@ import { constructSeries, models } from '../Scripts/weedModels';
 
 
 
-export default function Charts({ loading, etWarning, emergences, showOptions, categories, latestSeason, year, tillDates, showWeeds }) {
+export default function Charts({ loading, etWarning, emergences, showOptions, categories, year, tillDates, showWeeds, fcstLength }) {
   let lastTillIdx = 0;
   const plotLines = tillDates.map(date => {
     const value = categories.findIndex(el => el === date);
@@ -68,8 +68,7 @@ export default function Charts({ loading, etWarning, emergences, showOptions, ca
     }
   };
   
-  const isThisYear = latestSeason === year;
-  const series = constructSeries(emergences, isThisYear, showWeeds, lastTillIdx);
+  const series = constructSeries(emergences, showWeeds, lastTillIdx, fcstLength);
   
   return (
     <Box
@@ -131,7 +130,7 @@ Charts.propTypes = {
   etWarning: PropTypes.bool,
   emergences: PropTypes.object,
   categories: PropTypes.array,
-  latestSeason: PropTypes.number,
+  fcstLength: PropTypes.number,
   year: PropTypes.number,
   showOptions: PropTypes.bool,
   tillDates: PropTypes.array,

@@ -61,9 +61,11 @@ export default function App() {
           setCalculatedSoilTexture(soilComposition.texture);
           setETWarning(weatherData === null);
         } else if (whatUpdated === 'year') {
-          const weatherData = await getWeatherData(currLoc, year + '-' + format(today, 'MM-dd'));
-          setModelData({ ...modelData, weatherData });
-          setETWarning(weatherData === null);
+          if (modelData && 'soilComposition' in modelData) {
+            const weatherData = await getWeatherData(currLoc, year + '-' + format(today, 'MM-dd'));
+            setModelData({ ...modelData, weatherData });
+            setETWarning(weatherData === null);
+          }
         }
       } catch (e) {
         console.error(e);
@@ -229,10 +231,10 @@ export default function App() {
         <Charts
           loading={loading}
           etWarning={etWarning}
+          fcstLength={(modelData && modelData.weatherData) ? modelData.weatherData.fcstLength : 0}
           emergences={emergences}
           showOptions={showOptions}
           categories={(modelData && modelData.weatherData) ? modelData.weatherData.dates : []}
-          latestSeason={latestSeason}
           year={year}
           tillDates={tillDates}
           showWeeds={showWeeds}
