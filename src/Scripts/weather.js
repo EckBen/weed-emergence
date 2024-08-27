@@ -126,7 +126,8 @@ async function fetchPrecipAndTempData(lat, lon, eDate) {
 
 async function fetchPETData(lat, lon, todayStr) {
   const year = todayStr.slice(0,4);
-  const response = await fetch(`https://x6xfv2cdrl.execute-api.us-east-1.amazonaws.com/production/irrigation?lat=${lat}&lon=${lon}&year=${year}`);
+  const response = await fetch(`https://csf-irrigation-api-worker.rcc-acis.workers.dev/?lat=${lat}&lon=${lon}&year=${year}`);
+  // const response = await fetch(`https://x6xfv2cdrl.execute-api.us-east-1.amazonaws.com/production/irrigation?lat=${lat}&lon=${lon}&year=${year}`);
   if (!response.ok) {
     throw new Error(response.statusText);
   }
