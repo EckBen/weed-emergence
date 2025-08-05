@@ -2,7 +2,7 @@
   "name": "weed-emergence",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://pages.github.coecis.cornell.edu/be99/weed-emergence/",
+  "homepage": "https://eckben.github.io/weed-emergence/",
   "dependencies": {
     "@emotion/react": "^11.9.3",
     "@emotion/styled": "^11.9.3",
